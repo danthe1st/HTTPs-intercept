@@ -27,9 +27,9 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
-public class BouncyCastleCertCreator {
+public class CertificateGenerator {
 	
-	private BouncyCastleCertCreator() {
+	private CertificateGenerator() {
 		// utility class cannot be instantiated
 	}
 	

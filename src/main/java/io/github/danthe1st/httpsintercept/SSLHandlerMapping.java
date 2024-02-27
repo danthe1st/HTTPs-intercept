@@ -74,7 +74,7 @@ public class SSLHandlerMapping implements Mapping<String, SslContext> {
 			KeyPair serverKeyPair = extractKeyPair(ks, "server", passphrase);
 			KeyPair rootKeyPair = extractKeyPair(ks, "root", passphrase);
 			X509Certificate rootCert = (X509Certificate) ks.getCertificate("root");
-			X509Certificate newCert = BouncyCastleCertCreator.createCertificate(serverKeyPair, hostname, rootKeyPair, rootCert, false);
+			X509Certificate newCert = CertificateGenerator.createCertificate(serverKeyPair, hostname, rootKeyPair, rootCert, false);
 			
 			return SslContextBuilder.forServer(serverKeyPair.getPrivate(), (String)null, newCert, rootCert).build();
 		}catch(SSLException | KeyStoreException | CertIOException | OperatorCreationException | CertificateException | UnrecoverableKeyException | NoSuchAlgorithmException e){
