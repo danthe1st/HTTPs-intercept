@@ -33,7 +33,8 @@ public class CertificateGenerator {
 		// utility class cannot be instantiated
 	}
 	
-	// https://gamlor.info/posts-output/2019-10-29-java-create-certs-bouncy/en/
+	// modified version of certificate generation from article "Create HTTPS Certificates in Java with Bouncy Castle"
+	// by Roman Stoffel: https://gamlor.info/posts-output/2019-10-29-java-create-certs-bouncy/en/
 	public static X509Certificate createCertificate(KeyPair certKeyPair, String domain, KeyPair issuerKeyPair, X509Certificate issuerCert, boolean isCA) throws CertIOException, OperatorCreationException, CertificateException {
 		X500Name name = getSubject();
 		// If you issue more than just test certificates, you might want a decent serial number schema ^.^
@@ -41,12 +42,8 @@ public class CertificateGenerator {
 		Instant validFrom = Instant.now();
 		Instant validUntil = validFrom.plus(10 * 360, ChronoUnit.DAYS);
 		
-		// If there is no issuer, we self-sign our certificate.
-		X500Name issuerName;
-		PrivateKey issuerKey;
-		
-		issuerName = new JcaX509CertificateHolder(((X509Certificate) issuerCert)).getSubject();
-		issuerKey = issuerKeyPair.getPrivate();
+		X500Name issuerName = new JcaX509CertificateHolder(((X509Certificate) issuerCert)).getSubject();
+		PrivateKey issuerKey = issuerKeyPair.getPrivate();
 		
 		// The cert builder to build up our certificate information
 		JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
@@ -74,11 +71,14 @@ public class CertificateGenerator {
 		return new JcaX509CertificateConverter().getCertificate(certHolder);
 	}
 	
+	/**
+	 * Creates information about the X509 certificate subject
+	 * @return the certificate subject encoded in a {@link X500Name}
+	 */
 	private static X500Name getSubject() {
 		return new X500Name(
 				new RDN[] { new RDN(
 						new AttributeTypeAndValue[] {
-								
 								new AttributeTypeAndValue(BCStyle.CN, new DERUTF8String("interceptorCert")),
 								new AttributeTypeAndValue(BCStyle.OU, new DERUTF8String("dan1st")),
 								new AttributeTypeAndValue(BCStyle.O, new DERUTF8String("personal")),

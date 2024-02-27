@@ -23,11 +23,19 @@ import io.netty.handler.ssl.SniHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.IllegalReferenceCountException;
 
+/**
+ * Forwards incoming (already decrypted and preprocessed) HTTPs requests to the requested server and sends the response back
+ */
 final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
 	private final SslContext clientSslContext;
 	
+	/**
+	 * @param sniHandler Netty handler for Server Name Identification (contains the actual target host name)
+	 * @param clientSslContext {@link SslContext} used for the outgoing request
+	 * @param clientBootstrap template for sending the outgoing request
+	 */
 	HttpRequestHandler(SniHandler sniHandler, SslContext clientSslContext, Bootstrap clientBootstrap) {
 		this.sniHandler = sniHandler;
 		this.clientBootstrap = clientBootstrap;
@@ -42,9 +50,10 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 						@Override
 						protected void initChannel(SocketChannel ch) throws Exception {
 							ChannelPipeline p = ch.pipeline();
-							p.addLast(clientSslContext.newHandler(ch.alloc()));
-							p.addLast(new HttpClientCodec());
+							p.addLast(clientSslContext.newHandler(ch.alloc()));// use SSL/TLS for the outgoing request
+							p.addLast(new HttpClientCodec());// encode/decode HTTP
 							p.addLast(new ChannelInboundHandlerAdapter() {
+								// forward request to client and give back response
 								@Override
 								public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 									ServerHandlersInit.LOG.debug("READ: {}", msg);
@@ -66,12 +75,16 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 						}
 					}
 			);
+		
 		Channel outChannel = actualClientBootstrap.connect(sniHandler.hostname(), 443)
-			.sync().channel();
+			.sync()
+			.channel();
 		
 		outChannel.writeAndFlush(fullHttpRequest).sync();
 	}
 	
+	// in case Netty caught an exception (e.g. the server is unreachable),
+	// the client receives a 502 Bad Gateway response including the stack trace
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		if(!(cause instanceof IllegalReferenceCountException)){
