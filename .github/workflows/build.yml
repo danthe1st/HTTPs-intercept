@@ -11,7 +11,6 @@ jobs:
       with:
         distribution: 'graalvm'
         java-version: '21'
-        components: 'native-image'
         github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: 'maven'
     - name: Build image
@@ -20,3 +19,5 @@ jobs:
       with:
         path: target/https-intercept
         if-no-files-found: error
+    - name: verify executable
+      run: ./.github/scripts/verifyExecutable.sh
