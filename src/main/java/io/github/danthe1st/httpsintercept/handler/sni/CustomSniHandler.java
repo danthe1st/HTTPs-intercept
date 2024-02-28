@@ -33,10 +33,10 @@ public class CustomSniHandler extends SniHandler {
 		super(mapping);
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
 		
-		ignoredHosts = getIgnoredHosts();
+		ignoredHosts = loadIgnoredHosts();
 	}
 
-	private Set<String> getIgnoredHosts() throws IOException {
+	private static Set<String> loadIgnoredHosts() throws IOException {
 		Path ignoredHostsPath = Path.of("ignoredHosts.txt");
 		if(!Files.exists(ignoredHostsPath)){
 			Files.createFile(ignoredHostsPath);
@@ -72,5 +72,10 @@ public class CustomSniHandler extends SniHandler {
 		}else{
 			super.replaceHandler(channelHandlerContext, hostname, sslContext);
 		}
+	}
+	
+	@Override
+	public String hostname() {
+		return super.hostname();
 	}
 }

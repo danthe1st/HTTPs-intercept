@@ -37,6 +37,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	protected void initChannel(SocketChannel socketChannel) throws Exception {
 		SniHandler sniHandler = new CustomSniHandler(sniMapping, clientBootstrapTemplate);
 		socketChannel.pipeline().addLast(
+				sniHandler,
 				new HttpServerCodec(),
 				new HttpObjectAggregator(1048576),
 				new IncomingHttpRequestHandler(sniHandler, clientSslContext, clientBootstrapTemplate)
