@@ -15,9 +15,9 @@ jobs:
         cache: 'maven'
     - name: Build image
       run: mvn -Pnative package
+    - name: verify executable
+      run: ./.github/scripts/verifyExecutable.sh
     - uses: actions/upload-artifact@v4
       with:
         path: target/https-intercept
         if-no-files-found: error
-    - name: verify executable
-      run: ./.github/scripts/verifyExecutable.sh

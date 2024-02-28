@@ -26,10 +26,10 @@ targetUserId="$(id --user "$targetUser")"
 
 markId=1337
 
-sudo iptables -t mangle "$action" OUTPUT -p tcp -m owner --uid-owner $targetUserId --dport $targetPort -j MARK --set-mark "$markId"
-sudo iptables -t mangle "$action" OUTPUT -p tcp -m owner --uid-owner $targetUserId --dport $targetPort -j LOG --log-prefix='[inspector-MARK]'
-sudo iptables -t nat "$action" OUTPUT -p tcp --dport "$targetPort" -m mark --mark "$markId" -j LOG --log-prefix='[inspector-REROUTE]'
-sudo iptables -t nat "$action" OUTPUT -p tcp --dport "$targetPort" -m mark --mark "$markId" -j DNAT --to-destination "127.0.0.1:$trackerPort"
+iptables -t mangle "$action" OUTPUT -p tcp -m owner --uid-owner $targetUserId --dport $targetPort -j MARK --set-mark "$markId"
+iptables -t mangle "$action" OUTPUT -p tcp -m owner --uid-owner $targetUserId --dport $targetPort -j LOG --log-prefix='[inspector-MARK]'
+iptables -t nat "$action" OUTPUT -p tcp --dport "$targetPort" -m mark --mark "$markId" -j LOG --log-prefix='[inspector-REROUTE]'
+iptables -t nat "$action" OUTPUT -p tcp --dport "$targetPort" -m mark --mark "$markId" -j DNAT --to-destination "127.0.0.1:$trackerPort"
 
 # log can be viewed (by default) using the following command:
 # tail -f /var/log/kern.log|grep inspector

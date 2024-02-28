@@ -34,7 +34,7 @@ through the program such that that traffic is intercepted.
 I thought it might be interesting to possibly build a simple ad-blocker-like program
 operating on the system-level by attacking TLS.
 
-## Testing Setup
+## Setup
 - run the `certs.sh` script in order to generate a CA and template server certificate.
   This generates the following files:
   - `root.pem` and `root.crt` containing the CA certificate
@@ -47,3 +47,42 @@ operating on the system-level by attacking TLS.
   ```bash
   curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem
   ```
+  If the certificate is installed into the operating system truststore, the argument `--cacert root.pem` is not necessary.
+
+### Binary
+A sample binary is automatically build [with GitHub Actions](https://github.com/danthe1st/HTTPs-intercept/actions?query=branch%3Amaster)
+when a commit is pushed.
+The build script can be found in the file [.github/workflows/build.yml](.github/workflows/build.yml).
+
+A binary can also be built using `mvn -Pnative package`.
+
+### Systemd setup
+
+It is possible to create a systemd service definition with this program similar to this
+
+```
+[Unit]
+Description=HTTPs intercept: https://github.com/danthe1st/HTTPs-intercept
+
+[Service]
+Type=simple
+ExecStartPre=+/home/HTTPS_INTERCEPT_USER/HTTPS_INTERCEPT_DIRECTORY/reroute.sh enable USER_TO_INTERCEPT
+ExecStart=/home/HTTPS_INTERCEPT_USER/HTTPS_INTERCEPT_DIRECTORY/https-intercept
+ExecStopPost=+/home/HTTPS_INTERCEPT_USER/HTTPS_INTERCEPT_DIRECTORY/reroute.sh disable USER_TO_INTERCEPT
+Restart=on-failure
+User=HTTPS_INTERCEPT_USER
+WorkingDirectory=/home/HTTPS_INTERCEPT_USER/HTTPS_INTERCEPT_DIRECTORY
+
+[Install]
+WantedBy=multi-user.target
+```
+
+In this example
+- before starting forwards all traffic of the user `USER_TO_INTERCEPT`
+  is changed to be forwarded through the program for interception
+  - This is done by executing the `reroute.sh` script as root which sets up corresponding rules using `iptables`
+- The program is started as the user `HTTPS_INTERCEPT_USER`
+- This assumes the following files to be located in `/home/HTTPS_INTERCEPT_USER/HTTPS_INTERCEPT_DIRECTORY`:
+  - `reroute.sh`: The script configuring rules with `iptables`
+  - `https-intercept`: The built binary or a script executing the program
+  - `interceptor.jks` and `.secrets` as created by `certs.sh`
