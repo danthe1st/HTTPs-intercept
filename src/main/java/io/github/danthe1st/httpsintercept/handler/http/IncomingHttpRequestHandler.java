@@ -48,7 +48,7 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	
 	private void logRequest(FullHttpRequest fullHttpRequest) {
 		LOG
-			.atDebug()
+			.atInfo()
 			.addArgument(fullHttpRequest::method)
 			.addArgument(fullHttpRequest::uri)
 			.log("Received request: {} {}");
@@ -71,7 +71,10 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		if(!(cause instanceof IllegalReferenceCountException)){
-			LOG.error("An exception occured trying to process a request", cause);
+			LOG
+				.atError()
+				.addArgument(sniHandler::hostname)
+				.log("An exception occured trying to process a request to host '{}'", cause);
 			Channel channel = ctx.channel();
 			try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					PrintStream exceptionStream = new PrintStream(baos)){
