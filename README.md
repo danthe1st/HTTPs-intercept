@@ -44,6 +44,6 @@ operating on the system-level by attacking TLS.
   This requires the files `interceptor.jks` and `.secrets` to be located in the current working directory.
 - The program should listen on port `1337` and forward requests to port `443`.
   In order to make a request to `example.com` using `curl`, the following command can be used:
-```bash
-curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem
-```
+  ```bash
+  curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem
+  ```
