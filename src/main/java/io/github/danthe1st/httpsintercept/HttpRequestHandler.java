@@ -7,26 +7,24 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SniHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.IllegalReferenceCountException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Forwards incoming (already decrypted and preprocessed) HTTPs requests to the requested server and sends the response back
  */
 final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+	static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
+	
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
 	private final SslContext clientSslContext;
@@ -44,37 +42,21 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 	
 	@Override
 	protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws Exception {
+		logRequest(fullHttpRequest);
+		forwardRequest(channelHandlerContext, fullHttpRequest);
+	}
+	
+	private void logRequest(FullHttpRequest fullHttpRequest) {
+		LOG
+			.atDebug()
+			.addArgument(fullHttpRequest::method)
+			.addArgument(fullHttpRequest::uri)
+			.log("Received request: {} {}");
+	}
+	
+	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException {
 		Bootstrap actualClientBootstrap = clientBootstrap.clone()
-			.handler(
-					new ChannelInitializer<SocketChannel>() {
-						@Override
-						protected void initChannel(SocketChannel ch) throws Exception {
-							ChannelPipeline p = ch.pipeline();
-							p.addLast(clientSslContext.newHandler(ch.alloc()));// use SSL/TLS for the outgoing request
-							p.addLast(new HttpClientCodec());// encode/decode HTTP
-							p.addLast(new ChannelInboundHandlerAdapter() {
-								// forward request to client and give back response
-								@Override
-								public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-									ServerHandlersInit.LOG.debug("READ: {}", msg);
-									channelHandlerContext.writeAndFlush(msg);
-									
-									if(msg instanceof HttpContent){
-										channelHandlerContext.channel().close();
-										ctx.channel().close();
-									}
-								}
-							});
-						}
-						
-						@Override
-						public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-							ServerHandlersInit.LOG.error("An exception occured while forwarding a request", cause);
-							channelHandlerContext.channel().close();
-							ctx.channel().close();
-						}
-					}
-			);
+			.handler(new ForwardedRequestHandler(channelHandlerContext, clientSslContext));
 		
 		Channel outChannel = actualClientBootstrap.connect(sniHandler.hostname(), 443)
 			.sync()
@@ -82,6 +64,7 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 		
 		outChannel.writeAndFlush(fullHttpRequest).sync();
 	}
+	
 	
 	// in case Netty caught an exception (e.g. the server is unreachable),
 	// the client receives a 502 Bad Gateway response including the stack trace

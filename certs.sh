@@ -20,6 +20,7 @@ set -e
 
 # create CA
 keytool -keystore "$KEYSTORE_NAME" -storepass "$keystorePassphrase" -alias root -dname "cn=RootCA, ou=Root_CertificateAuthority, o=CertificateAuthority, c=AT" -genkeypair -keyalg RSA -ext bc:c
+chmod 600 "$KEYSTORE_NAME"
 # create template for server certificate
 keytool -keystore "$KEYSTORE_NAME" -storepass "$keystorePassphrase" -alias server -dname "cn=$SERVER_CN, ou=ServerCertOU, o=personal, c=AT" -genkeypair -keyalg RSA
 
@@ -30,6 +31,4 @@ openssl x509 -in "$ROOT_CERT_FILE" -out "$ROOT_PEM_FILE" -outform PEM
 # export passphrase
 echo "$keystorePassphrase" > .secret
 echo "$keyPassphrase" >> .secret
-
-# can be tested using the following command
-# curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem
+chmod 600 .secret
