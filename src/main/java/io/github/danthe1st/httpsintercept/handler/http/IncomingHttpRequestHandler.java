@@ -50,8 +50,9 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 		LOG
 			.atInfo()
 			.addArgument(fullHttpRequest::method)
+			.addArgument(sniHandler::hostname)
 			.addArgument(fullHttpRequest::uri)
-			.log("Received request: {} {}");
+			.log("Received request: {} {}{}");
 	}
 	
 	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException {
