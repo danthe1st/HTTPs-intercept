@@ -52,7 +52,7 @@ operating on the system-level by attacking TLS.
 ### Binary
 A sample binary is automatically build [with GitHub Actions](https://github.com/danthe1st/HTTPs-intercept/actions?query=branch%3Amaster)
 when a commit is pushed.
-The build script can be found in the file [.github/workflows/build.yml](.github/workflows/build.yml).
+The build script can be found in the file [.github/workflows/build.yml](./.github/workflows/build.yml).
 
 A native binary can also be built using `mvn -Pnative package`.
 This requires GraalVM.
