@@ -49,6 +49,16 @@ operating on the system-level by attacking TLS.
   ```
   If the certificate is installed into the operating system truststore, the argument `--cacert root.pem` is not necessary.
 
+It is also possible to add the certificate to the truststore of a JDK using a command similar to the following:
+```bash
+sudo keytool -keystore $JAVA_HOME/lib/security/cacerts -import interceptCert -file root.crt
+```
+
+With this, it will be able to intercept HTTPs traffic from Java applications as long as
+- the truststore is installed to the JVM used for running the application
+  (installing the certificate to another truststore doesn't make this work)
+- the application uses the default truststore
+
 ### Binary
 A sample binary is automatically build [with GitHub Actions](https://github.com/danthe1st/HTTPs-intercept/actions?query=branch%3Amaster)
 when a commit is pushed.
