@@ -1,4 +1,4 @@
-package io.github.danthe1st.httpsintercept;
+package io.github.danthe1st.httpsintercept.handler.http;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory;
  * Requests need to be forwarded to the requested server.
  * This class encodes the forwarded request, decodes the response and sends it back
  */
-final class ForwardedRequestHandler extends ChannelInitializer<SocketChannel> {
-	private static final Logger LOG = LoggerFactory.getLogger(ForwardedRequestHandler.class);
+final class OutgoingHttpRequestHandler extends ChannelInitializer<SocketChannel> {
+	private static final Logger LOG = LoggerFactory.getLogger(OutgoingHttpRequestHandler.class);
 	
 	private final ChannelHandlerContext originalClientContext;
 	private final SslContext forwardSslContext;
 	
-	ForwardedRequestHandler(ChannelHandlerContext originalClientContext, SslContext clientSslContext) {
+	OutgoingHttpRequestHandler(ChannelHandlerContext originalClientContext, SslContext clientSslContext) {
 		this.originalClientContext = originalClientContext;
 		this.forwardSslContext = clientSslContext;
 	}

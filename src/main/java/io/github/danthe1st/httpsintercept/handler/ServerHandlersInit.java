@@ -1,10 +1,13 @@
-package io.github.danthe1st.httpsintercept;
+package io.github.danthe1st.httpsintercept.handler;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import io.github.danthe1st.httpsintercept.handler.http.IncomingHttpRequestHandler;
+import io.github.danthe1st.httpsintercept.handler.sni.CustomSniHandler;
+import io.github.danthe1st.httpsintercept.handler.sni.SNIHandlerMapping;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -20,24 +23,23 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	
 	static final Logger LOG = LoggerFactory.getLogger(ServerHandlersInit.class);
 	
-	private final Bootstrap clientBootstrap;
+	private final Bootstrap clientBootstrapTemplate;
 	private final SslContext clientSslContext;
-	private final SSLHandlerMapping sniMapping;
+	private final SNIHandlerMapping sniMapping;
 	
 	public ServerHandlersInit(Bootstrap clientBootstrap) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		this.clientBootstrap = clientBootstrap;
-		sniMapping = new SSLHandlerMapping();
+		this.clientBootstrapTemplate = clientBootstrap;
+		sniMapping = new SNIHandlerMapping();
 		clientSslContext = SslContextBuilder.forClient().build();
 	}
 	
 	@Override
 	protected void initChannel(SocketChannel socketChannel) throws Exception {
-		SniHandler sniHandler = new SniHandler(sniMapping);
+		SniHandler sniHandler = new CustomSniHandler(sniMapping, clientBootstrapTemplate);
 		socketChannel.pipeline().addLast(
-				sniHandler,
 				new HttpServerCodec(),
 				new HttpObjectAggregator(1048576),
-				new HttpRequestHandler(sniHandler, clientSslContext, clientBootstrap)
+				new IncomingHttpRequestHandler(sniHandler, clientSslContext, clientBootstrapTemplate)
 		);
 	}
 	

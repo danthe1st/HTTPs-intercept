@@ -1,4 +1,4 @@
-package io.github.danthe1st.httpsintercept;
+package io.github.danthe1st.httpsintercept.handler.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Forwards incoming (already decrypted and preprocessed) HTTPs requests to the requested server and sends the response back
  */
-final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
-	static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
+public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+	static final Logger LOG = LoggerFactory.getLogger(IncomingHttpRequestHandler.class);
 	
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
@@ -34,7 +34,7 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 	 * @param clientSslContext {@link SslContext} used for the outgoing request
 	 * @param clientBootstrap template for sending the outgoing request
 	 */
-	HttpRequestHandler(SniHandler sniHandler, SslContext clientSslContext, Bootstrap clientBootstrap) {
+	public IncomingHttpRequestHandler(SniHandler sniHandler, SslContext clientSslContext, Bootstrap clientBootstrap) {
 		this.sniHandler = sniHandler;
 		this.clientBootstrap = clientBootstrap;
 		this.clientSslContext = clientSslContext;
@@ -56,7 +56,7 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 	
 	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException {
 		Bootstrap actualClientBootstrap = clientBootstrap.clone()
-			.handler(new ForwardedRequestHandler(channelHandlerContext, clientSslContext));
+			.handler(new OutgoingHttpRequestHandler(channelHandlerContext, clientSslContext));
 		
 		Channel outChannel = actualClientBootstrap.connect(sniHandler.hostname(), 443)
 			.sync()
@@ -71,7 +71,7 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		if(!(cause instanceof IllegalReferenceCountException)){
-			ServerHandlersInit.LOG.error("An exception occured trying to process a request", cause);
+			LOG.error("An exception occured trying to process a request", cause);
 			Channel channel = ctx.channel();
 			try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					PrintStream exceptionStream = new PrintStream(baos)){
@@ -88,6 +88,5 @@ final class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpReque
 				channel.close();
 			}
 		}
-		
 	}
 }

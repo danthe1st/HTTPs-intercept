@@ -1,4 +1,4 @@
-package io.github.danthe1st.httpsintercept;
+package io.github.danthe1st.httpsintercept.handler.sni;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +16,7 @@ import java.util.List;
 
 import javax.net.ssl.SSLException;
 
+import io.github.danthe1st.httpsintercept.CertificateGenerator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.Mapping;
@@ -24,9 +25,9 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SSLHandlerMapping implements Mapping<String, SslContext> {
+public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(SSLHandlerMapping.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SNIHandlerMapping.class);
 	
 	private static final String KEYSTORE = "interceptor.jks";
 	
@@ -34,7 +35,7 @@ public class SSLHandlerMapping implements Mapping<String, SslContext> {
 	private final KeyStore ks;
 	private final char[] privateKeyPassword;
 	
-	public SSLHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+	public SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
 		
 		Path secretFile = Path.of(".secret");
 		if(!Files.exists(secretFile)){
