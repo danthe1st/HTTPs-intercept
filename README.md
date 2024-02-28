@@ -54,7 +54,8 @@ A sample binary is automatically build [with GitHub Actions](https://github.com/
 when a commit is pushed.
 The build script can be found in the file [.github/workflows/build.yml](.github/workflows/build.yml).
 
-A binary can also be built using `mvn -Pnative package`.
+A native binary can also be built using `mvn -Pnative package`.
+This requires GraalVM.
 
 ### Systemd setup
 
