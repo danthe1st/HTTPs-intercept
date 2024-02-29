@@ -37,7 +37,8 @@ public final class RawForwardedOutgoingRequestHandler extends ChannelInitializer
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		super.channelUnregistered(ctx);
-		LOG.info("channel unregistered");
+		originalClientContext.channel().close();
+		ctx.channel().close();
 	}
 	
 	private final class ResponseHandler extends ChannelInboundHandlerAdapter {
