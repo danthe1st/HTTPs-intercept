@@ -64,6 +64,8 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 				.channel();
 			
 			outChannel.writeAndFlush(fullHttpRequest).sync();
+		}catch(InterruptedException e){
+			throw e;
 		}catch(Exception e){
 			LOG.error("An exception occured trying to establish a connection with the target server '{}'", hostname, e);
 			writeException(e, channelHandlerContext.channel());
