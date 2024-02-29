@@ -29,7 +29,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	
 	public ServerHandlersInit(Bootstrap clientBootstrap) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		this.clientBootstrapTemplate = clientBootstrap;
-		sniMapping = new SNIHandlerMapping();
+		sniMapping = SNIHandlerMapping.createMapping();
 		clientSslContext = SslContextBuilder.forClient().build();
 	}
 	

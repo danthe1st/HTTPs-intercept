@@ -12,7 +12,10 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.SSLException;
 
@@ -30,12 +33,13 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	private static final Logger LOG = LoggerFactory.getLogger(SNIHandlerMapping.class);
 	
 	private static final String KEYSTORE = "interceptor.jks";
-	
+	private static final Duration CACHE_INVALIDATION_DURATION = Duration.ofSeconds(10);
 	
 	private final KeyStore ks;
 	private final char[] privateKeyPassword;
+	private final Map<String, SslContextCacheEntry> certificateCache = new ConcurrentHashMap<>();
 	
-	public SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+	private SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
 		
 		Path secretFile = Path.of(".secret");
 		if(!Files.exists(secretFile)){
@@ -57,6 +61,26 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 			ks.load(is, passphrase);
 		}
 	}
+	
+	public static SNIHandlerMapping createMapping() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+		SNIHandlerMapping mapping = new SNIHandlerMapping();
+		Thread.startVirtualThread(mapping::runCleanupDaemon);
+		return mapping;
+	}
+
+	private void runCleanupDaemon() {
+		try{
+			while(true){// NOSONAR ended by potential InterruptedException (or more likely the virtual thread ending)
+				long minAccessTime = System.currentTimeMillis() - CACHE_INVALIDATION_DURATION.toMillis();
+				certificateCache
+					.entrySet()
+					.removeIf(e -> e.getValue().getLastAccessTime() < minAccessTime);
+				Thread.sleep(CACHE_INVALIDATION_DURATION.toMillis());
+			}
+		}catch(InterruptedException e){
+			Thread.currentThread().interrupt();
+		}
+	}
 
 	private KeyPair extractKeyPair(KeyStore ks, String keyName, char[] passphrase) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
 		return new KeyPair(ks.getCertificate(keyName).getPublicKey(), (PrivateKey)ks.getKey(keyName, passphrase));
@@ -65,12 +89,18 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	@Override
 	public SslContext map(String hostname) {
 		LOG.debug("loadding certificate for hostname {}", hostname);
+		if(hostname == null){
+			LOG.warn("using default key manager because hostname is missing");
+			hostname = "localhost";
+		}
+		return certificateCache.computeIfAbsent(
+				hostname,
+				h -> new SslContextCacheEntry(createSslContext(h))
+		).getSslContext();
+	}
+	
+	private SslContext createSslContext(String hostname) {
 		try{
-			if(hostname==null) {
-				LOG.warn("using default key manager because hostname is missing");
-				hostname="localhost";
-			}
-			// TODO cache certs of hostnames
 			char[] passphrase = privateKeyPassword;
 			KeyPair serverKeyPair = extractKeyPair(ks, "server", passphrase);
 			KeyPair rootKeyPair = extractKeyPair(ks, "root", passphrase);
@@ -82,13 +112,4 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 			throw new CertificateGenerationException("ailed to initialize the server-side SSLContext", e);
 		}
 	}
-	
-	private static class CertificateGenerationException extends RuntimeException {
-		
-		public CertificateGenerationException(String message, Throwable cause) {
-			super(message, cause);
-		}
-		
-	}
-	
 }
