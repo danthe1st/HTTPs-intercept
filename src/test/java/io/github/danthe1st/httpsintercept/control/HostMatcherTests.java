@@ -7,20 +7,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
 class HostMatcherTests {
 	@Test
 	void testExactMatch() {
-		HostMatcher matcher = new HostMatcher(Set.of("example.com"), Collections.emptySet());
+		HostMatcher matcher = new HostMatcher(
+				Set.of("example.com"),
+				Collections.emptySet(),
+				Collections.emptyList()
+		);
 		assertTrue(matcher.matches("example.com"));
 		assertFalse(matcher.matches("github.com"));
 	}
 	
 	@Test
 	void testPartMatch() {
-		HostMatcher matcher = new HostMatcher(Collections.emptySet(), Set.of("example.com"));
+		HostMatcher matcher = new HostMatcher(
+				Collections.emptySet(),
+				Set.of("example.com"),
+				Collections.emptyList()
+		);
 		assertTrue(matcher.matches("host.example.com"));
 		assertTrue(matcher.matches(".example.com"));
 		assertFalse(matcher.matches("host.github.com"));
@@ -28,6 +37,20 @@ class HostMatcherTests {
 		assertFalse(matcher.matches("example.com."));
 		assertFalse(matcher.matches(""));
 		assertFalse(matcher.matches("."));
+	}
+	
+	@Test
+	void testRegexMatch() {
+		HostMatcher hostMatcher = new HostMatcher(
+				Collections.emptySet(),
+				Collections.emptySet(),
+				List.of(Pattern.compile("ex.+\\.com"))
+		);
+		
+		assertTrue(hostMatcher.matches("example.com"));
+		assertFalse(hostMatcher.matches("ex.com"));
+		assertFalse(hostMatcher.matches("github.com"));
+		assertFalse(hostMatcher.matches(""));
 	}
 	
 	@Test
@@ -56,4 +79,16 @@ class HostMatcherTests {
 		assertFalse(hostMatcher.matches("example.com"));
 	}
 	
+	@Test
+	void testLoadRegex() {
+		HostMatcher hostMatcher = HostMatcher.load(List.of("/ex.+\\.com"));
+		assertTrue(hostMatcher.matches("example.com"));
+		assertFalse(hostMatcher.matches("github.com"));
+		
+		hostMatcher = HostMatcher.load(List.of("/.*"));
+		assertTrue(hostMatcher.matches("example.com"));
+		assertTrue(hostMatcher.matches("github.com"));
+		assertTrue(hostMatcher.matches("localhost"));
+		assertTrue(hostMatcher.matches(""));
+	}
 }
