@@ -3,6 +3,7 @@ package io.github.danthe1st.httpsintercept.handler;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import io.github.danthe1st.httpsintercept.handler.http.IncomingHttpRequestHandler;
@@ -27,7 +28,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	private final SslContext clientSslContext;
 	private final SNIHandlerMapping sniMapping;
 	
-	public ServerHandlersInit(Bootstrap clientBootstrap) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+	public ServerHandlersInit(Bootstrap clientBootstrap) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
 		sniMapping = SNIHandlerMapping.createMapping();
 		clientSslContext = SslContextBuilder.forClient().build();

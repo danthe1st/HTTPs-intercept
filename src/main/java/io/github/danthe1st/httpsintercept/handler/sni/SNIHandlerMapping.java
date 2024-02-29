@@ -36,10 +36,13 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	private static final Duration CACHE_INVALIDATION_DURATION = Duration.ofSeconds(10);
 	
 	private final KeyStore ks;
-	private final char[] privateKeyPassword;
 	private final Map<String, SslContextCacheEntry> certificateCache = new ConcurrentHashMap<>();
+	private final KeyPair rootKeyPair;
+	private final X509Certificate rootCert;
+
+	private final KeyPair serverKeyPair;
 	
-	private SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+	private SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
 		
 		Path secretFile = Path.of(".secret");
 		if(!Files.exists(secretFile)){
@@ -51,7 +54,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 		}
 		
 		char[] passphrase = secretLines.get(0).toCharArray();
-		privateKeyPassword = secretLines.get(1).toCharArray();
+		char[] privateKeyPassword = secretLines.get(1).toCharArray();
 		
 		LOG.info("Initiating SSL context");
 		
@@ -60,9 +63,18 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 		try(InputStream is = Files.newInputStream(Path.of(KEYSTORE))){
 			ks.load(is, passphrase);
 		}
+		
+		rootCert = (X509Certificate) ks.getCertificate("root");
+		
+		rootKeyPair = new KeyPair(
+				rootCert.getPublicKey(),
+				(PrivateKey) ks.getKey("root", privateKeyPassword)
+		);
+		
+		serverKeyPair = CertificateGenerator.generateKeyPair();
 	}
 	
-	public static SNIHandlerMapping createMapping() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+	public static SNIHandlerMapping createMapping() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		SNIHandlerMapping mapping = new SNIHandlerMapping();
 		Thread.startVirtualThread(mapping::runCleanupDaemon);
 		return mapping;
@@ -101,14 +113,9 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	
 	private SslContext createSslContext(String hostname) {
 		try{
-			char[] passphrase = privateKeyPassword;
-			KeyPair serverKeyPair = extractKeyPair(ks, "server", passphrase);
-			KeyPair rootKeyPair = extractKeyPair(ks, "root", passphrase);
-			X509Certificate rootCert = (X509Certificate) ks.getCertificate("root");
 			X509Certificate newCert = CertificateGenerator.createCertificate(serverKeyPair, hostname, rootKeyPair, rootCert, false);
-			
 			return SslContextBuilder.forServer(serverKeyPair.getPrivate(), (String)null, newCert, rootCert).build();
-		}catch(SSLException | KeyStoreException | CertIOException | OperatorCreationException | CertificateException | UnrecoverableKeyException | NoSuchAlgorithmException e){
+		}catch(SSLException | CertIOException | OperatorCreationException | CertificateException e){
 			throw new CertificateGenerationException("ailed to initialize the server-side SSLContext", e);
 		}
 	}

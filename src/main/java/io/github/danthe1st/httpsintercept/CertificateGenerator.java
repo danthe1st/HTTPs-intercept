@@ -2,6 +2,8 @@ package io.github.danthe1st.httpsintercept;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -86,6 +88,11 @@ public class CertificateGenerator {
 						}
 				) }
 		);
+	}
+	
+	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		return keyGen.generateKeyPair();
 	}
 	
 }

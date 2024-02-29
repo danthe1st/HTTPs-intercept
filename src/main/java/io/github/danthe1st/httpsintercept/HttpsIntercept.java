@@ -3,6 +3,7 @@ package io.github.danthe1st.httpsintercept;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import io.github.danthe1st.httpsintercept.handler.ServerHandlersInit;
@@ -19,7 +20,7 @@ import io.netty.handler.logging.LoggingHandler;
 public class HttpsIntercept {
 	private static final int LOCAL_PORT = Integer.getInteger("localPort", 1337);
 	
-	public static void main(String[] args) throws InterruptedException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+	public static void main(String[] args) throws InterruptedException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
 		EventLoopGroup bossGroup = new NioEventLoopGroup(r -> Thread.ofVirtual().unstarted(r));// NOSONAR using shutdownGracefully instead of close
 		EventLoopGroup workerGroup = new NioEventLoopGroup(r -> Thread.ofVirtual().unstarted(r));// NOSONAR using shutdownGracefully instead of close
 		

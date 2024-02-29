@@ -21,8 +21,6 @@ set -e
 # create CA
 keytool -keystore "$KEYSTORE_NAME" -storepass "$keystorePassphrase" -alias root -dname "cn=RootCA, ou=Root_CertificateAuthority, o=CertificateAuthority, c=AT" -genkeypair -keyalg RSA -ext bc:c
 chmod 600 "$KEYSTORE_NAME"
-# create template for server certificate
-keytool -keystore "$KEYSTORE_NAME" -storepass "$keystorePassphrase" -alias server -dname "cn=$SERVER_CN, ou=ServerCertOU, o=personal, c=AT" -genkeypair -keyalg RSA
 
 # export root CA so that it can be imported into browsers/the OS
 keytool -keystore "$KEYSTORE_NAME" -storepass "$keystorePassphrase" -export -alias root > "$ROOT_CERT_FILE"
