@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.github.danthe1st.httpsintercept.control.HostMatcher;
 import io.github.danthe1st.httpsintercept.handler.raw.RawForwardIncomingRequestHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandler;
@@ -27,13 +28,13 @@ public class CustomSniHandler extends SniHandler {
 	
 	private final Bootstrap clientBootstrapTemplate;
 	
-	private final Set<String> ignoredHosts;
+	private final HostMatcher ignoredHosts;
 	
 	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate) throws IOException {
 		super(mapping);
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
 		
-		ignoredHosts = loadIgnoredHosts();
+		ignoredHosts = HostMatcher.load(Path.of("ignoredHosts.txt"));
 	}
 
 	private static Set<String> loadIgnoredHosts() throws IOException {
@@ -50,8 +51,8 @@ public class CustomSniHandler extends SniHandler {
 	@Override
 	protected void replaceHandler(ChannelHandlerContext channelHandlerContext, String hostname, SslContext sslContext) throws Exception {
 		ChannelPipeline pipeline = channelHandlerContext.pipeline();
-		if(ignoredHosts.contains(hostname)){
-			LOG.debug("skipping hostname {}", hostname);
+		if(ignoredHosts.matches(hostname)){
+			LOG.info("skipping hostname {}", hostname);
 			
 			boolean foundThis = false;
 			
