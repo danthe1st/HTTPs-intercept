@@ -31,6 +31,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	public ServerHandlersInit(Bootstrap clientBootstrap) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
 		sniMapping = SNIHandlerMapping.createMapping();
+		
 		clientSslContext = SslContextBuilder.forClient().build();
 	}
 	
@@ -41,8 +42,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 				sniHandler,
 				new HttpServerCodec(),
 				new HttpObjectAggregator(1048576),
-				new IncomingHttpRequestHandler(sniHandler, clientSslContext, clientBootstrapTemplate)
+				new IncomingHttpRequestHandler(sniHandler, clientBootstrapTemplate)
 		);
 	}
-	
 }

@@ -1,6 +1,7 @@
 package io.github.danthe1st.httpsintercept.handler.http;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import io.netty.bootstrap.Bootstrap;
@@ -27,17 +28,15 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
-	private final SslContext clientSslContext;
 	
 	/**
 	 * @param sniHandler Netty handler for Server Name Identification (contains the actual target host name)
 	 * @param clientSslContext {@link SslContext} used for the outgoing request
 	 * @param clientBootstrap template for sending the outgoing request
 	 */
-	public IncomingHttpRequestHandler(SniHandler sniHandler, SslContext clientSslContext, Bootstrap clientBootstrap) {
+	public IncomingHttpRequestHandler(SniHandler sniHandler, Bootstrap clientBootstrap) {
 		this.sniHandler = sniHandler;
 		this.clientBootstrap = clientBootstrap;
-		this.clientSslContext = clientSslContext;
 	}
 	
 	@Override
@@ -55,15 +54,20 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 			.log("Received request: {} {}{}");
 	}
 	
-	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException {
+	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException, IOException {
+		String hostname = sniHandler.hostname();
 		Bootstrap actualClientBootstrap = clientBootstrap.clone()
-			.handler(new OutgoingHttpRequestHandler(channelHandlerContext, clientSslContext));
-		
-		Channel outChannel = actualClientBootstrap.connect(sniHandler.hostname(), 443)
-			.sync()
-			.channel();
-		
-		outChannel.writeAndFlush(fullHttpRequest).sync();
+			.handler(new OutgoingHttpRequestHandler(channelHandlerContext, hostname));
+		try{
+			Channel outChannel = actualClientBootstrap.connect(hostname, 443)
+				.sync()
+				.channel();
+			
+			outChannel.writeAndFlush(fullHttpRequest).sync();
+		}catch(Exception e){
+			LOG.error("An exception occured trying to establish a connection with the target server '{}'", hostname, e);
+			writeException(e, channelHandlerContext.channel());
+		}
 	}
 	
 	
@@ -76,21 +80,24 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 				.atError()
 				.addArgument(sniHandler::hostname)
 				.log("An exception occured trying to process a request to host '{}'", cause);
-			Channel channel = ctx.channel();
-			try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					PrintStream exceptionStream = new PrintStream(baos)){
-				exceptionStream.println("An exception occured trying to intercept the transmission");
-				exceptionStream.println();
-				cause.printStackTrace(exceptionStream);
-				FullHttpResponse response = new DefaultFullHttpResponse(
-						HttpVersion.HTTP_1_1,
-						HttpResponseStatus.BAD_GATEWAY,
-						Unpooled.copiedBuffer(baos.toByteArray())
-				);
-				channel.writeAndFlush(response).sync();
-			}finally{
-				channel.close();
-			}
+			ctx.channel().close();
+		}
+	}
+	
+	private void writeException(Throwable cause, Channel channel) throws InterruptedException, IOException {
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				PrintStream exceptionStream = new PrintStream(baos)){
+			exceptionStream.println("An exception occured trying to intercept the transmission");
+			exceptionStream.println();
+			cause.printStackTrace(exceptionStream);
+			FullHttpResponse response = new DefaultFullHttpResponse(
+					HttpVersion.HTTP_1_1,
+					HttpResponseStatus.BAD_GATEWAY,
+					Unpooled.copiedBuffer(baos.toByteArray())
+			);
+			channel.writeAndFlush(response).sync();
+		}finally{
+			channel.close();
 		}
 	}
 }
