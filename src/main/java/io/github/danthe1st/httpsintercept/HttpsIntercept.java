@@ -14,8 +14,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
 public class HttpsIntercept {
 	private static final int LOCAL_PORT = Integer.getInteger("localPort", 1337);
@@ -32,7 +30,6 @@ public class HttpsIntercept {
 			ServerBootstrap serverBootstrap = new ServerBootstrap();
 			serverBootstrap.group(bossGroup, workerGroup)
 				.channel(NioServerSocketChannel.class)
-				.handler(new LoggingHandler(LogLevel.INFO))
 				.childHandler(new ServerHandlersInit(clientBootstrap))
 				.childOption(ChannelOption.AUTO_READ, true)
 				.bind(LOCAL_PORT).sync().channel().closeFuture().sync();

@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
 
-./certs.sh
-
 ./target/https-intercept > intercept.log 2>&1 &
-sleep 1
+sleep 2
 interceptPID="$!"
 
 curl_result="$(curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem -i)"
@@ -22,5 +20,10 @@ fi
 # assert text Example Domain in response
 echo "$curl_result" | grep "Example Domain"
 
+# assert logs
+grep "Received request: GET example.com/" < intercept.log > /dev/null
+
 cat intercept.log
 rm intercept.log
+
+echo "successfully verified executable"

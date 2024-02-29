@@ -12,7 +12,7 @@ Furthermore, it is dangerous to import CA certificates into the trust store of a
 If a malicous entity gets access to the key,
 they can read or change most encrypted communication performed using the device trusting the certificate.
 
-## How?
+## How does it work?
 The `certs.sh` script creates a CA certificate and exports it into the file `root.pem` and `root.crt`.
 These files can then be imported in trust stores of browsers or Operating Systems.
 Adding a CA certificate to the Linux trust store is explained [here](https://askubuntu.com/a/94861/966107) (though it would be necessary to use the `root.pem` here).
@@ -28,10 +28,6 @@ as well as the host to target when signing the generated certificate.
 
 Furthermore, the script `reroute.sh` can configure `iptables` to route all traffic of a specified user
 through the program such that that traffic is intercepted.
-
-## Why
-I thought it might be interesting to possibly build a simple ad-blocker-like program
-operating on the system-level by attacking TLS.
 
 ## Setup
 - run the `certs.sh` script in order to generate a CA certificate.
@@ -58,13 +54,25 @@ With this, it will be able to intercept HTTPs traffic from Java applications as 
   (installing the certificate to another truststore doesn't make this work)
 - the application uses the default truststore
 
-### Binary
+### Binaries
 A sample binary is automatically build [with GitHub Actions](https://github.com/danthe1st/HTTPs-intercept/actions?query=branch%3Amaster)
 when a commit is pushed.
 The build script can be found in the file [.github/workflows/build.yml](./.github/workflows/build.yml).
 
+#### building binaries
+
+The command `mvn package` generates a JAR file at a location
+similar to `target/https-intercept-VERSION-jar-with-dependencies.jar`.
+This JAR file can be run using `java -jar`.
+
 A native binary can also be built using `mvn -Pnative package`.
-This requires GraalVM.
+This requires GraalVM and [some additional prerequisites](https://www.graalvm.org/latest/reference-manual/native-image/#prerequisites).
+
+In order to customize the image build, it is possible to supply extra arguments using the property `native.extraArgs`.
+For example, the following command can be used to allow device-specific optimizations:
+```bash
+mvn package -Pnative -Dnative.extraArgs="--march=native"
+```
 
 ### Systemd setup
 
