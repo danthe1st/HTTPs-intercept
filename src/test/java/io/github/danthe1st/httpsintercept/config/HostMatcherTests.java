@@ -1,15 +1,12 @@
 package io.github.danthe1st.httpsintercept.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import io.github.danthe1st.httpsintercept.config.HostMatcher;
 import org.junit.jupiter.api.Test;
 
 class HostMatcherTests {
@@ -52,44 +49,5 @@ class HostMatcherTests {
 		assertFalse(hostMatcher.matches("ex.com"));
 		assertFalse(hostMatcher.matches("github.com"));
 		assertFalse(hostMatcher.matches(""));
-	}
-	
-	@Test
-	void testLoadExact() {
-		HostMatcher hostMatcher = HostMatcher.load(List.of("example.com"));
-		assertEquals(Set.of("example.com"), hostMatcher.exactHosts());
-		assertEquals(Collections.emptySet(), hostMatcher.hostParts());
-	}
-	
-	@Test
-	void testLoadParts() {
-		HostMatcher hostMatcher = HostMatcher.load(List.of("*.example.com"));
-		assertEquals(Collections.emptySet(), hostMatcher.exactHosts());
-		assertEquals(Set.of("example.com"), hostMatcher.hostParts());
-		
-		assertTrue(hostMatcher.matches("host.example.com"));
-	}
-	
-	@Test
-	void testLoadEmptyPart() {
-		HostMatcher hostMatcher = HostMatcher.load(List.of("*."));
-		assertEquals(Collections.emptySet(), hostMatcher.exactHosts());
-		assertEquals(Set.of(""), hostMatcher.hostParts());
-		
-		assertFalse(hostMatcher.matches("something"));
-		assertFalse(hostMatcher.matches("example.com"));
-	}
-	
-	@Test
-	void testLoadRegex() {
-		HostMatcher hostMatcher = HostMatcher.load(List.of("/ex.+\\.com"));
-		assertTrue(hostMatcher.matches("example.com"));
-		assertFalse(hostMatcher.matches("github.com"));
-		
-		hostMatcher = HostMatcher.load(List.of("/.*"));
-		assertTrue(hostMatcher.matches("example.com"));
-		assertTrue(hostMatcher.matches("github.com"));
-		assertTrue(hostMatcher.matches("localhost"));
-		assertTrue(hostMatcher.matches(""));
 	}
 }

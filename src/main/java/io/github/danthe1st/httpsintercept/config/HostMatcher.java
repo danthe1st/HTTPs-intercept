@@ -1,14 +1,8 @@
 package io.github.danthe1st.httpsintercept.config;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,43 +13,6 @@ public record HostMatcher(
 		Set<Pattern> hostRegexes) {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(HostMatcher.class);
-	
-	public static HostMatcher load(Path config) throws IOException {
-		if(!Files.exists(config)){
-			Files.createFile(config);
-			return load(Collections.emptyList());
-		}
-		List<String> hostDeclarations = Files.readAllLines(config);
-		return load(hostDeclarations);
-	}
-	
-	static HostMatcher load(List<String> hostDeclarations) {
-		Set<String> exactHosts = new HashSet<>();
-		Set<String> hostParts = new HashSet<>();
-		Set<Pattern> hostRegexes = new HashSet<>();
-		for(String declaration : hostDeclarations){
-			processHostDeclaration(declaration, exactHosts, hostParts, hostRegexes);
-		}
-		return new HostMatcher(exactHosts, hostParts, hostRegexes);
-	}
-
-	private static void processHostDeclaration(String declaration, Set<String> exactHosts, Set<String> hostParts, Set<Pattern> hostRegexes) {
-		if(declaration.isBlank() || declaration.startsWith("#")){
-			return;
-		}
-		if(declaration.startsWith("/")){
-			String hostRegex = declaration.substring(1);
-			try{
-				hostRegexes.add(Pattern.compile(hostRegex));
-			}catch(PatternSyntaxException e){
-				LOG.error("invalid regex: {}", hostRegex);
-			}
-		}else if(declaration.startsWith("*.")){
-			hostParts.add(declaration.substring(2));
-		}else{
-			exactHosts.add(declaration);
-		}
-	}
 	
 	public HostMatcher(Set<String> exactHosts, Set<String> hostParts, Set<Pattern> hostRegexes) {
 		this.exactHosts = copyOrEmptyIfNull(exactHosts);
