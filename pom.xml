@@ -28,14 +28,19 @@
 			<version>1.77</version>
 		</dependency>
 		<dependency>
-		    <groupId>ch.qos.logback</groupId>
-		    <artifactId>logback-core</artifactId>
-		    <version>${logback.version}</version>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>${logback.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>2.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -69,7 +74,8 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>io.github.danthe1st.httpsintercept.HttpsIntercept</mainClass>
+							<mainClass>
+								io.github.danthe1st.httpsintercept.HttpsIntercept</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -89,11 +95,11 @@
 			<id>native</id>
 			<dependencies>
 				<dependency>
-				   <groupId>org.graalvm.buildtools</groupId>
-				    <artifactId>graalvm-reachability-metadata</artifactId>
-				    <version>${native-plugin-version}</version>
-				    <classifier>repository</classifier>
-				    <type>zip</type>
+					<groupId>org.graalvm.buildtools</groupId>
+					<artifactId>graalvm-reachability-metadata</artifactId>
+					<version>${native-plugin-version}</version>
+					<classifier>repository</classifier>
+					<type>zip</type>
 				</dependency>
 			</dependencies>
 			<build>
@@ -104,12 +110,14 @@
 						<version>${native-plugin-version}</version>
 						<extensions>true</extensions>
 						<configuration>
-							<buildArgs combine.self="merge" combine.children="append">
+							<buildArgs combine.self="merge"
+								combine.children="append">
 								<buildArg>-O3</buildArg>
 								<buildArg>--gc=G1</buildArg>
 								<buildArg>--strict-image-heap</buildArg>
 								<buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
 								<buildArg>-H:ResourceConfigurationFiles=graal/resource-config.json</buildArg>
+								<buildArg>-H:ReflectionConfigurationFiles=graal/reflect-config.json</buildArg>
 							</buildArgs>
 						</configuration>
 						<executions>
@@ -139,7 +147,8 @@
 						<artifactId>native-maven-plugin</artifactId>
 						<version>${native-plugin-version}</version>
 						<configuration>
-							<buildArgs combine.self="merge" combine.children="append">
+							<buildArgs combine.self="merge"
+								combine.children="append">
 								<buildArg>${native.extraArgs}</buildArg>
 							</buildArgs>
 						</configuration>

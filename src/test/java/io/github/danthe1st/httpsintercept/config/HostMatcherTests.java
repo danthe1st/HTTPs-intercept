@@ -1,4 +1,4 @@
-package io.github.danthe1st.httpsintercept.control;
+package io.github.danthe1st.httpsintercept.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import io.github.danthe1st.httpsintercept.config.HostMatcher;
 import org.junit.jupiter.api.Test;
 
 class HostMatcherTests {
@@ -17,7 +18,7 @@ class HostMatcherTests {
 		HostMatcher matcher = new HostMatcher(
 				Set.of("example.com"),
 				Collections.emptySet(),
-				Collections.emptyList()
+				Collections.emptySet()
 		);
 		assertTrue(matcher.matches("example.com"));
 		assertFalse(matcher.matches("github.com"));
@@ -28,7 +29,7 @@ class HostMatcherTests {
 		HostMatcher matcher = new HostMatcher(
 				Collections.emptySet(),
 				Set.of("example.com"),
-				Collections.emptyList()
+				Collections.emptySet()
 		);
 		assertTrue(matcher.matches("host.example.com"));
 		assertTrue(matcher.matches(".example.com"));
@@ -44,7 +45,7 @@ class HostMatcherTests {
 		HostMatcher hostMatcher = new HostMatcher(
 				Collections.emptySet(),
 				Collections.emptySet(),
-				List.of(Pattern.compile("ex.+\\.com"))
+				Set.of(Pattern.compile("ex.+\\.com"))
 		);
 		
 		assertTrue(hostMatcher.matches("example.com"));
@@ -56,15 +57,15 @@ class HostMatcherTests {
 	@Test
 	void testLoadExact() {
 		HostMatcher hostMatcher = HostMatcher.load(List.of("example.com"));
-		assertEquals(Set.of("example.com"), hostMatcher.getExactHosts());
-		assertEquals(Collections.emptySet(), hostMatcher.getHostParts());
+		assertEquals(Set.of("example.com"), hostMatcher.exactHosts());
+		assertEquals(Collections.emptySet(), hostMatcher.hostParts());
 	}
 	
 	@Test
 	void testLoadParts() {
 		HostMatcher hostMatcher = HostMatcher.load(List.of("*.example.com"));
-		assertEquals(Collections.emptySet(), hostMatcher.getExactHosts());
-		assertEquals(Set.of("example.com"), hostMatcher.getHostParts());
+		assertEquals(Collections.emptySet(), hostMatcher.exactHosts());
+		assertEquals(Set.of("example.com"), hostMatcher.hostParts());
 		
 		assertTrue(hostMatcher.matches("host.example.com"));
 	}
@@ -72,8 +73,8 @@ class HostMatcherTests {
 	@Test
 	void testLoadEmptyPart() {
 		HostMatcher hostMatcher = HostMatcher.load(List.of("*."));
-		assertEquals(Collections.emptySet(), hostMatcher.getExactHosts());
-		assertEquals(Set.of(""), hostMatcher.getHostParts());
+		assertEquals(Collections.emptySet(), hostMatcher.exactHosts());
+		assertEquals(Set.of(""), hostMatcher.hostParts());
 		
 		assertFalse(hostMatcher.matches("something"));
 		assertFalse(hostMatcher.matches("example.com"));

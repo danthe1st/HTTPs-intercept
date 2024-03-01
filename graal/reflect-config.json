@@ -1,0 +1,17 @@
+[
+  {
+    "name" : "io.github.danthe1st.httpsintercept.config.Config",
+    "allPublicConstructors" : true,
+    "allRecordComponents": true
+  },{
+    "name" : "io.github.danthe1st.httpsintercept.config.HostMatcher",
+    "allPublicConstructors" : true,
+    "allRecordComponents": true
+  },{
+    "name" : "java.util.HashSet",
+    "allPublicConstructors" : true
+  },{
+    "name" : "java.util.Set",
+    "allPublicMethods": true
+  }
+]

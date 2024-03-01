@@ -2,9 +2,9 @@
 set -e
 
 ./target/https-intercept > intercept.log 2>&1 &
-sleep 2
 interceptPID="$!"
 
+sleep 2
 curl_result="$(curl --connect-to example.com:1337:127.0.0.1 https://example.com:1337 --cacert root.pem -i)"
 
 kill "$interceptPID"

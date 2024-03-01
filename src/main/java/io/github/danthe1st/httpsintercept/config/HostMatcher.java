@@ -1,9 +1,8 @@
-package io.github.danthe1st.httpsintercept.control;
+package io.github.danthe1st.httpsintercept.config;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,13 +13,12 @@ import java.util.regex.PatternSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HostMatcher {
+public record HostMatcher(
+		Set<String> exactHosts,
+		Set<String> hostParts,
+		Set<Pattern> hostRegexes) {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(HostMatcher.class);
-	
-	private final Set<String> exactHosts;
-	private final Set<String> hostParts;
-	private List<Pattern> hostRegexes;
 	
 	public static HostMatcher load(Path config) throws IOException {
 		if(!Files.exists(config)){
@@ -34,14 +32,14 @@ public class HostMatcher {
 	static HostMatcher load(List<String> hostDeclarations) {
 		Set<String> exactHosts = new HashSet<>();
 		Set<String> hostParts = new HashSet<>();
-		List<Pattern> hostRegexes = new ArrayList<>();
+		Set<Pattern> hostRegexes = new HashSet<>();
 		for(String declaration : hostDeclarations){
 			processHostDeclaration(declaration, exactHosts, hostParts, hostRegexes);
 		}
 		return new HostMatcher(exactHosts, hostParts, hostRegexes);
 	}
 
-	private static void processHostDeclaration(String declaration, Set<String> exactHosts, Set<String> hostParts, List<Pattern> hostRegexes) {
+	private static void processHostDeclaration(String declaration, Set<String> exactHosts, Set<String> hostParts, Set<Pattern> hostRegexes) {
 		if(declaration.isBlank() || declaration.startsWith("#")){
 			return;
 		}
@@ -59,10 +57,17 @@ public class HostMatcher {
 		}
 	}
 	
-	HostMatcher(Set<String> exactHosts, Set<String> hostParts, List<Pattern> hostRegexes) {
-		this.exactHosts = Set.copyOf(exactHosts);
-		this.hostParts = Set.copyOf(hostParts);
-		this.hostRegexes = List.copyOf(hostRegexes);
+	public HostMatcher(Set<String> exactHosts, Set<String> hostParts, Set<Pattern> hostRegexes) {
+		this.exactHosts = copyOrEmptyIfNull(exactHosts);
+		this.hostParts = copyOrEmptyIfNull(hostParts);
+		this.hostRegexes = copyOrEmptyIfNull(hostRegexes);
+	}
+	
+	private <T> Set<T> copyOrEmptyIfNull(Set<T> data) {
+		if(data == null){
+			return Collections.emptySet();
+		}
+		return Set.copyOf(data);
 	}
 	
 	public boolean matches(String hostname) {
@@ -91,17 +96,5 @@ public class HostMatcher {
 		}
 		
 		return false;
-	}
-	
-	Set<String> getExactHosts() {
-		return Collections.unmodifiableSet(exactHosts);
-	}
-	
-	Set<String> getHostParts() {
-		return Collections.unmodifiableSet(hostParts);
-	}
-	
-	List<Pattern> getHostRegexes() {
-		return Collections.unmodifiableList(hostRegexes);
 	}
 }
