@@ -46,11 +46,11 @@ public record HostMatcher(
 		}
 		
 		int index = 0;
-		while((index = hostname.indexOf('.', index) + 1) != 0 && index < hostname.length()){
+		do{
 			if(hostParts.contains(hostname.substring(index))){
 				return true;
 			}
-		}
+		}while((index = hostname.indexOf('.', index) + 1) != 0 && index < hostname.length());
 		
 		return false;
 	}

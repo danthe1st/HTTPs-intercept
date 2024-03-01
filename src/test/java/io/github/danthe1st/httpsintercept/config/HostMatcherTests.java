@@ -22,6 +22,16 @@ class HostMatcherTests {
 	}
 	
 	@Test
+	void testEmptyPartMatch() {
+		HostMatcher matcher = new HostMatcher(
+				Collections.emptySet(),
+				Set.of(""),
+				Collections.emptySet()
+		);
+		assertFalse(matcher.matches("localhost"));
+	}
+	
+	@Test
 	void testPartMatch() {
 		HostMatcher matcher = new HostMatcher(
 				Collections.emptySet(),
@@ -31,7 +41,7 @@ class HostMatcherTests {
 		assertTrue(matcher.matches("host.example.com"));
 		assertTrue(matcher.matches(".example.com"));
 		assertFalse(matcher.matches("host.github.com"));
-		assertFalse(matcher.matches("example.com"));
+		assertTrue(matcher.matches("example.com"));
 		assertFalse(matcher.matches("example.com."));
 		assertFalse(matcher.matches(""));
 		assertFalse(matcher.matches("."));
