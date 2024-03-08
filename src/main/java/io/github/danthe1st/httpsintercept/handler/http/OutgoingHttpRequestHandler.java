@@ -11,6 +11,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.ssl.SslHandler;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ final class OutgoingHttpRequestHandler extends ChannelInitializer<SocketChannel>
 		p.addLast(
 				new SslHandler(engine),
 				new HttpClientCodec(), // encode/decode HTTP
+				new HttpContentDecompressor(),
 				new HttpObjectAggregator(Integer.MAX_VALUE),
 				new ResponseHandler(originalClientContext, fullHttpRequest, postForwardMatcher.matchesAsIterable(hostname))
 		);
