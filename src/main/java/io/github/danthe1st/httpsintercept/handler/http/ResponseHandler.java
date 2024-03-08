@@ -1,8 +1,10 @@
 package io.github.danthe1st.httpsintercept.handler.http;
 
+import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,21 +16,39 @@ final class ResponseHandler extends ChannelInboundHandlerAdapter {
 	private static final Logger LOG = LoggerFactory.getLogger(ResponseHandler.class);
 	
 	private final ChannelHandlerContext originalClientContext;
+	private final Iterable<PostForwardRule> postForwardRules;
 	
-	public ResponseHandler(ChannelHandlerContext originalClientContext) {
+	private final FullHttpRequest fullHttpRequest;
+	
+	public ResponseHandler(ChannelHandlerContext originalClientContext, FullHttpRequest fullHttpRequest, Iterable<PostForwardRule> postForwardRules) {
 		this.originalClientContext = originalClientContext;
+		this.fullHttpRequest = fullHttpRequest;
+		this.postForwardRules = postForwardRules;
 	}
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		LOG.debug("read: {}", msg);
-		originalClientContext.writeAndFlush(msg);
 		
-		if(msg instanceof LastHttpContent){
-			LOG.debug("last HTTP content");
-			originalClientContext.channel().close();
-			ctx.channel().close();
+		if(msg instanceof FullHttpResponse res){
+			processRules(res);
+		}else{
+			LOG.error("respose message not assignable to FullHttpResponse: {}", msg);
+			originalClientContext.writeAndFlush(msg);
 		}
+		
+		originalClientContext.channel().close();
+		ctx.channel().close();
+	}
+
+	private void processRules(FullHttpResponse res) {
+		HttpResponseContentAccessor contentAccessor = new HttpResponseContentAccessor(res);
+		for(PostForwardRule rule : postForwardRules){
+			if(!rule.processRequest(fullHttpRequest, res, contentAccessor, originalClientContext.channel())){
+				return;
+			}
+		}
+		originalClientContext.writeAndFlush(res);
 	}
 	
 	@Override

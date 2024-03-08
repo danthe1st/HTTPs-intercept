@@ -26,10 +26,15 @@ final class HostPartIterator<T> extends IteratingIterator<T> {
 			if(hostParts.containsKey(hostPart)){
 				current = hostParts.get(hostPart).iterator();
 				if(current.hasNext()){
+					nextIndex();
 					return current;
 				}
 			}
-		}while((index = hostname.indexOf('.', index) + 1) != 0 && index < hostname.length());
+		}while(nextIndex() != 0 && index < hostname.length());
 		return Collections.emptyIterator();
+	}
+
+	private int nextIndex() {
+		return index = hostname.indexOf('.', index) + 1;
 	}
 }

@@ -56,7 +56,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 		char[] passphrase = secretLines.get(0).toCharArray();
 		char[] privateKeyPassword = secretLines.get(1).toCharArray();
 		
-		LOG.info("Initiating SSL context");
+		LOG.debug("Initiating SSL context");
 		
 		ks = KeyStore.getInstance("JKS");
 		

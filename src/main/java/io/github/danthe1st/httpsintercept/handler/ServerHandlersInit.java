@@ -15,7 +15,9 @@ import io.github.danthe1st.httpsintercept.handler.http.IncomingHttpRequestHandle
 import io.github.danthe1st.httpsintercept.handler.sni.CustomSniHandler;
 import io.github.danthe1st.httpsintercept.handler.sni.SNIHandlerMapping;
 import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
+import io.github.danthe1st.httpsintercept.rules.ProcessingRule;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -31,27 +33,30 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	
 	private final Bootstrap clientBootstrapTemplate;
 	private final SNIHandlerMapping sniMapping;
-	private final Config config;
 	
-	private final IterativeHostMatcher<PreForwardRule> preForwardMatcher;
 	private final IterativeHostMatcher<Object> ignoredHostMatcher;
+	private final IterativeHostMatcher<PreForwardRule> preForwardMatcher;
+	private final IterativeHostMatcher<PostForwardRule> postForwardMatcher;
 	
 	public ServerHandlersInit(Bootstrap clientBootstrap, Config config) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
 		sniMapping = SNIHandlerMapping.createMapping();
-		this.config = config;
 		
-		List<PreForwardRule> preForwardRules = config.preForwardRules();
-		List<Map.Entry<HostMatcherConfig, PreForwardRule>> rules = new ArrayList<>();
-		for(PreForwardRule preForwardRule : preForwardRules){
-			HostMatcherConfig hostMatcher = preForwardRule.hostMatcher();
+		preForwardMatcher = createMatcherFromRules(config.preForwardRules());
+		postForwardMatcher = createMatcherFromRules(config.postForwardRules());
+		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
+	}
+
+	private <T extends ProcessingRule> IterativeHostMatcher<T> createMatcherFromRules(List<T> ruleList) {
+		List<Map.Entry<HostMatcherConfig, T>> rules = new ArrayList<>();
+		for(T rule : ruleList){
+			HostMatcherConfig hostMatcher = rule.hostMatcher();
 			if(hostMatcher == null){
 				hostMatcher = new HostMatcherConfig(null, null, null);
 			}
-			rules.add(Map.entry(hostMatcher, preForwardRule));
+			rules.add(Map.entry(hostMatcher, rule));
 		}
-		preForwardMatcher = new IterativeHostMatcher<>(rules);
-		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
+		return new IterativeHostMatcher<>(rules);
 	}
 	
 	@Override
@@ -60,8 +65,8 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		socketChannel.pipeline().addLast(
 				sniHandler,
 				new HttpServerCodec(),
-				new HttpObjectAggregator(1048576),
-				new IncomingHttpRequestHandler(sniHandler, clientBootstrapTemplate, preForwardMatcher)
+				new HttpObjectAggregator(Integer.MAX_VALUE),
+				new IncomingHttpRequestHandler(sniHandler, clientBootstrapTemplate, preForwardMatcher, postForwardMatcher)
 		);
 	}
 }
