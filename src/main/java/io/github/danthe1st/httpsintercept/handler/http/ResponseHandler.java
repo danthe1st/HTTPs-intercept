@@ -3,11 +3,15 @@ package io.github.danthe1st.httpsintercept.handler.http;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.LastHttpContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles the response of the outgoing/forwarded request
  */
 final class ResponseHandler extends ChannelInboundHandlerAdapter {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ResponseHandler.class);
 	
 	private final ChannelHandlerContext originalClientContext;
 	
@@ -17,11 +21,11 @@ final class ResponseHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		OutgoingHttpRequestHandler.LOG.debug("read: {}", msg);
+		LOG.debug("read: {}", msg);
 		originalClientContext.writeAndFlush(msg);
 		
 		if(msg instanceof LastHttpContent){
-			OutgoingHttpRequestHandler.LOG.debug("last HTTP content");
+			LOG.debug("last HTTP content");
 			originalClientContext.channel().close();
 			ctx.channel().close();
 		}
@@ -29,7 +33,7 @@ final class ResponseHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-		OutgoingHttpRequestHandler.LOG.debug("channel unregistered");
+		LOG.debug("channel unregistered");
 		originalClientContext.channel().close();
 		ctx.channel().close();
 		super.channelUnregistered(ctx);

@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -28,15 +30,17 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
+	private final IterativeHostMatcher<PreForwardRule> hostMatcher;
 	
 	/**
 	 * @param sniHandler Netty handler for Server Name Identification (contains the actual target host name)
 	 * @param clientSslContext {@link SslContext} used for the outgoing request
 	 * @param clientBootstrap template for sending the outgoing request
 	 */
-	public IncomingHttpRequestHandler(SniHandler sniHandler, Bootstrap clientBootstrap) {
+	public IncomingHttpRequestHandler(SniHandler sniHandler, Bootstrap clientBootstrap, IterativeHostMatcher<PreForwardRule> hostMatcher) {
 		this.sniHandler = sniHandler;
 		this.clientBootstrap = clientBootstrap;
+		this.hostMatcher = hostMatcher;
 	}
 	
 	@Override
@@ -56,6 +60,13 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	
 	private void forwardRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws InterruptedException, IOException {
 		String hostname = sniHandler.hostname();
+		
+		for(PreForwardRule preForwardRule : hostMatcher.matchesAsIterable(hostname)){
+			if(!preForwardRule.processRequest(fullHttpRequest, channelHandlerContext.channel())){
+				return;
+			}
+		}
+		
 		Bootstrap actualClientBootstrap = clientBootstrap.clone()
 			.handler(new OutgoingHttpRequestHandler(channelHandlerContext, hostname));
 		try{

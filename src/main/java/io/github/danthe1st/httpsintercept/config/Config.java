@@ -4,17 +4,22 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
 
 public record Config(
-		HostMatcher ignoredHosts
+		HostMatcherConfig ignoredHosts,
+		List<PreForwardRule> preForwardRules
 ) {
 	
-	public Config {
+	public Config(HostMatcherConfig ignoredHosts, List<PreForwardRule> preForwardRules) {
 		Objects.requireNonNull(ignoredHosts);
+		this.ignoredHosts = ignoredHosts;
+		this.preForwardRules = List.copyOf(preForwardRules);
 	}
 	
 	public static Config load(Path path) throws IOException {

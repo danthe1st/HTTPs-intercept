@@ -5,11 +5,17 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import io.github.danthe1st.httpsintercept.config.Config;
+import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
 import io.github.danthe1st.httpsintercept.handler.http.IncomingHttpRequestHandler;
 import io.github.danthe1st.httpsintercept.handler.sni.CustomSniHandler;
 import io.github.danthe1st.httpsintercept.handler.sni.SNIHandlerMapping;
+import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -27,10 +33,19 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	private final SNIHandlerMapping sniMapping;
 	private final Config config;
 	
+	private IterativeHostMatcher<PreForwardRule> preForwardMatcher;
+	
 	public ServerHandlersInit(Bootstrap clientBootstrap, Config config) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
 		sniMapping = SNIHandlerMapping.createMapping();
 		this.config = config;
+		
+		List<PreForwardRule> preForwardRules = config.preForwardRules();
+		List<Map.Entry<HostMatcherConfig, PreForwardRule>> rules = new ArrayList<>();
+		for(PreForwardRule preForwardRule : preForwardRules){
+			rules.add(Map.entry(preForwardRule.hostMatcher(), preForwardRule));
+		}
+		preForwardMatcher = new IterativeHostMatcher<>(rules);
 	}
 	
 	@Override
@@ -40,7 +55,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 				sniHandler,
 				new HttpServerCodec(),
 				new HttpObjectAggregator(1048576),
-				new IncomingHttpRequestHandler(sniHandler, clientBootstrapTemplate)
+				new IncomingHttpRequestHandler(sniHandler, clientBootstrapTemplate, preForwardMatcher)
 		);
 	}
 }

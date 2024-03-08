@@ -4,15 +4,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public record HostMatcher(
 		Set<String> exactHosts,
 		Set<String> hostParts,
 		Set<Pattern> hostRegexes) {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(HostMatcher.class);
 	
 	public HostMatcher(Set<String> exactHosts, Set<String> hostParts, Set<Pattern> hostRegexes) {
 		this.exactHosts = copyOrEmptyIfNull(exactHosts);

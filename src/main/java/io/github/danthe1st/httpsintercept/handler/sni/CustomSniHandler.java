@@ -1,18 +1,13 @@
 package io.github.danthe1st.httpsintercept.handler.sni;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import io.github.danthe1st.httpsintercept.config.Config;
-import io.github.danthe1st.httpsintercept.config.HostMatcher;
 import io.github.danthe1st.httpsintercept.handler.raw.RawForwardIncomingRequestHandler;
+import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,30 +24,19 @@ public class CustomSniHandler extends SniHandler {
 	
 	private final Bootstrap clientBootstrapTemplate;
 	
-	private final HostMatcher ignoredHosts;
+	private final IterativeHostMatcher<Object> ignoredHosts;
 	
 	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate, Config config) throws IOException {
 		super(mapping);
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
-		
-		ignoredHosts = config.ignoredHosts();
+		ignoredHosts = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
 	}
 
-	private static Set<String> loadIgnoredHosts() throws IOException {
-		Path ignoredHostsPath = Path.of("ignoredHosts.txt");
-		if(!Files.exists(ignoredHostsPath)){
-			Files.createFile(ignoredHostsPath);
-			return Collections.emptySet();
-		}
-		try(Stream<String> ignoredHostStream = Files.lines(ignoredHostsPath)){
-			return ignoredHostStream.collect(Collectors.toSet());
-		}
-	}
-	
 	@Override
 	protected void replaceHandler(ChannelHandlerContext channelHandlerContext, String hostname, SslContext sslContext) throws Exception {
 		ChannelPipeline pipeline = channelHandlerContext.pipeline();
-		if(ignoredHosts.matches(hostname)){
+		// TODO no hostname
+		if(ignoredHosts.allMatches(hostname).hasNext()){
 			LOG.info("skipping hostname {}", hostname);
 			
 			boolean foundThis = false;
@@ -74,10 +58,5 @@ public class CustomSniHandler extends SniHandler {
 		}else{
 			super.replaceHandler(channelHandlerContext, hostname, sslContext);
 		}
-	}
-	
-	@Override
-	public String hostname() {
-		return super.hostname();
 	}
 }
