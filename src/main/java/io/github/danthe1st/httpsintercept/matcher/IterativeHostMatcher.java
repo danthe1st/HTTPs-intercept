@@ -19,21 +19,28 @@ public final class IterativeHostMatcher<T> {
 	private final Map<String, List<T>> exactHosts;
 	private final Map<String, List<T>> hostParts;
 	private final Map<Pattern, List<T>> hostRegexes;
+	private final List<T> wildcards;
 	
 	public IterativeHostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs) {
 		Map<String, List<T>> hosts = new HashMap<>();
 		Map<String, List<T>> parts = new HashMap<>();
 		Map<Pattern, List<T>> regexes = new HashMap<>();
+		List<T> wildcardElements = new ArrayList<>();
 		for(Map.Entry<HostMatcherConfig, T> entry : configs){
 			HostMatcherConfig config = entry.getKey();
 			T value = entry.getValue();
-			addToMap(hosts, value, config.exactHosts(), Function.identity());
-			addToMap(parts, value, config.hostParts(), Function.identity());
-			addToMap(regexes, value, config.hostRegexes(), Pattern::compile);
+			if(config.exactHosts().isEmpty() && config.hostParts().isEmpty() && config.hostRegexes().isEmpty()){
+				wildcardElements.add(value);
+			}else{
+				addToMap(hosts, value, config.exactHosts(), Function.identity());
+				addToMap(parts, value, config.hostParts(), Function.identity());
+				addToMap(regexes, value, config.hostRegexes(), Pattern::compile);
+			}
 		}
 		this.exactHosts = toImmutable(hosts);
 		this.hostParts = toImmutable(parts);
 		this.hostRegexes = toImmutable(regexes);
+		this.wildcards = List.copyOf(wildcardElements);
 	}
 	
 	private <K> void addToMap(Map<K, List<T>> multimap, T value, Set<String> configValue, Function<String, K> keyTransformer) {
@@ -59,6 +66,7 @@ public final class IterativeHostMatcher<T> {
 			iterators.add(new HostPartIterator<>(hostname, hostParts));
 		}
 		iterators.add(new RegexIterator<>(hostRegexes, hostname));
+		iterators.add(wildcards.iterator());
 		
 		Iterator<T> it = new IteratingIterator<>() {
 			private Iterator<T> current = iterators.poll();

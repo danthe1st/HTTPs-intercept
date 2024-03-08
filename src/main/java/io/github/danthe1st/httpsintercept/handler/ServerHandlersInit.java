@@ -43,7 +43,11 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		List<PreForwardRule> preForwardRules = config.preForwardRules();
 		List<Map.Entry<HostMatcherConfig, PreForwardRule>> rules = new ArrayList<>();
 		for(PreForwardRule preForwardRule : preForwardRules){
-			rules.add(Map.entry(preForwardRule.hostMatcher(), preForwardRule));
+			HostMatcherConfig hostMatcher = preForwardRule.hostMatcher();
+			if(hostMatcher == null){
+				hostMatcher = new HostMatcherConfig(null, null, null);
+			}
+			rules.add(Map.entry(hostMatcher, preForwardRule));
 		}
 		preForwardMatcher = new IterativeHostMatcher<>(rules);
 	}
