@@ -2,10 +2,8 @@ package io.github.danthe1st.httpsintercept.handler.sni;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import io.github.danthe1st.httpsintercept.config.Config;
 import io.github.danthe1st.httpsintercept.handler.raw.RawForwardIncomingRequestHandler;
 import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
 import io.netty.bootstrap.Bootstrap;
@@ -26,10 +24,10 @@ public class CustomSniHandler extends SniHandler {
 	
 	private final IterativeHostMatcher<Object> ignoredHosts;
 	
-	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate, Config config) throws IOException {
+	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate, IterativeHostMatcher<Object> ignoredHostMatcher) throws IOException {
 		super(mapping);
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
-		ignoredHosts = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
+		ignoredHosts = ignoredHostMatcher;
 	}
 
 	@Override

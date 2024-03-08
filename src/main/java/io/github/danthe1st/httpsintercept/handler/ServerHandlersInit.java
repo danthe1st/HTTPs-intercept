@@ -33,7 +33,8 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	private final SNIHandlerMapping sniMapping;
 	private final Config config;
 	
-	private IterativeHostMatcher<PreForwardRule> preForwardMatcher;
+	private final IterativeHostMatcher<PreForwardRule> preForwardMatcher;
+	private final IterativeHostMatcher<Object> ignoredHostMatcher;
 	
 	public ServerHandlersInit(Bootstrap clientBootstrap, Config config) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
@@ -50,11 +51,12 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 			rules.add(Map.entry(hostMatcher, preForwardRule));
 		}
 		preForwardMatcher = new IterativeHostMatcher<>(rules);
+		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
 	}
 	
 	@Override
 	protected void initChannel(SocketChannel socketChannel) throws Exception {
-		SniHandler sniHandler = new CustomSniHandler(sniMapping, clientBootstrapTemplate, config);
+		SniHandler sniHandler = new CustomSniHandler(sniMapping, clientBootstrapTemplate, ignoredHostMatcher);
 		socketChannel.pipeline().addLast(
 				sniHandler,
 				new HttpServerCodec(),
