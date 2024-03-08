@@ -29,12 +29,12 @@ public final class IterativeHostMatcher<T> {
 		for(Map.Entry<HostMatcherConfig, T> entry : configs){
 			HostMatcherConfig config = entry.getKey();
 			T value = entry.getValue();
-			if(config.exactHosts().isEmpty() && config.hostParts().isEmpty() && config.hostRegexes().isEmpty()){
+			if(config.exact().isEmpty() && config.partial().isEmpty() && config.regex().isEmpty()){
 				wildcardElements.add(value);
 			}else{
-				addToMap(hosts, value, config.exactHosts(), Function.identity());
-				addToMap(parts, value, config.hostParts(), Function.identity());
-				addToMap(regexes, value, config.hostRegexes(), Pattern::compile);
+				addToMap(hosts, value, config.exact(), Function.identity());
+				addToMap(parts, value, config.partial(), Function.identity());
+				addToMap(regexes, value, config.regex(), Pattern::compile);
 			}
 		}
 		this.exactHosts = toImmutable(hosts);
