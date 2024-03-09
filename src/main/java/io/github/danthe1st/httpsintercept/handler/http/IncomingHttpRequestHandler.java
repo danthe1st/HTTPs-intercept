@@ -19,7 +19,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SniHandler;
 import io.netty.handler.ssl.SslContext;
-import io.netty.util.IllegalReferenceCountException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +75,7 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 			Channel outChannel = actualClientBootstrap.connect(hostname, 443)
 				.sync()
 				.channel();
-			
+			fullHttpRequest.retain();
 			outChannel.writeAndFlush(fullHttpRequest).sync();
 		}catch(InterruptedException e){
 			throw e;
@@ -91,13 +90,11 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	// the client receives a 502 Bad Gateway response including the stack trace
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		if(!(cause instanceof IllegalReferenceCountException)){
 			LOG
 				.atError()
 				.addArgument(sniHandler::hostname)
 				.log("An exception occured trying to process a request to host '{}'", cause);
 			ctx.channel().close();
-		}
 	}
 	
 	private void writeException(Throwable cause, Channel channel) throws InterruptedException, IOException {

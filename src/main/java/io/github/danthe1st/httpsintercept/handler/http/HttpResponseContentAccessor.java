@@ -27,8 +27,12 @@ public class HttpResponseContentAccessor {
 	private void ensureBytesPresent() {
 		if(bytes == null){
 			ByteBuf buf = contentBuf.copy();
-			bytes = new byte[buf.readableBytes()];
-			buf.readBytes(bytes);
+			try{
+				bytes = new byte[buf.readableBytes()];
+				buf.readBytes(bytes);
+			}finally{
+				buf.release();
+			}
 		}
 	}
 }
