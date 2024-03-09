@@ -44,7 +44,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		
 		preForwardMatcher = createMatcherFromRules(config.preForwardRules());
 		postForwardMatcher = createMatcherFromRules(config.postForwardRules());
-		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())));
+		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())), false);
 	}
 
 	private <T extends ProcessingRule> IterativeHostMatcher<T> createMatcherFromRules(List<T> ruleList) {
@@ -56,7 +56,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 			}
 			rules.add(Map.entry(hostMatcher, rule));
 		}
-		return new IterativeHostMatcher<>(rules);
+		return new IterativeHostMatcher<>(rules, true);
 	}
 	
 	@Override

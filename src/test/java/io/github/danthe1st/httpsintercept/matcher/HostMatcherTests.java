@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class HostMatcherTests {
 	
 	private IterativeHostMatcher<Object> createMatcher(Set<String> exactHosts, Set<String> hostParts, Set<String> hostRegexes) {
-		return new IterativeHostMatcher<>(List.of(Map.entry(new HostMatcherConfig(exactHosts, hostParts, hostRegexes), new Object())));
+		return new IterativeHostMatcher<>(List.of(Map.entry(new HostMatcherConfig(exactHosts, hostParts, hostRegexes), new Object())), false);
 	}
 	
 	@Test

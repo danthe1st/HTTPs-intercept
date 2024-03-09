@@ -21,7 +21,7 @@ public final class IterativeHostMatcher<T> {
 	private final Map<Pattern, List<T>> hostRegexes;
 	private final List<T> wildcards;
 	
-	public IterativeHostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs) {
+	public IterativeHostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs, boolean allowWildcard) {
 		Map<String, List<T>> hosts = new HashMap<>();
 		Map<String, List<T>> parts = new HashMap<>();
 		Map<Pattern, List<T>> regexes = new HashMap<>();
@@ -29,7 +29,7 @@ public final class IterativeHostMatcher<T> {
 		for(Map.Entry<HostMatcherConfig, T> entry : configs){
 			HostMatcherConfig config = entry.getKey();
 			T value = entry.getValue();
-			if(config.exact().isEmpty() && config.partial().isEmpty() && config.regex().isEmpty()){
+			if(allowWildcard && config.exact().isEmpty() && config.partial().isEmpty() && config.regex().isEmpty()){
 				wildcardElements.add(value);
 			}else{
 				addToMap(hosts, value, config.exact(), Function.identity());
