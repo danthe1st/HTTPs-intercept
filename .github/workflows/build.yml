@@ -16,9 +16,13 @@ jobs:
     - name: Build image
       run: mvn -Pnative package
     - name: verify executable
+      id: verify
       run: |
         ./certs.sh
         ./.github/scripts/verifyExecutable.sh
+    - name: check log if error
+      if: ${{ failure() && steps.verify.conclusion == 'failure' }}
+      run: cat intercept.log
     - uses: actions/upload-artifact@v4
       with:
         path: target/https-intercept
