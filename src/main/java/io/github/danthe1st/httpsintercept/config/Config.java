@@ -35,6 +35,9 @@ public record Config(
 	}
 	
 	public static Config load(Path path) throws IOException {
+		if(!Files.exists(path)) {
+			return new Config(null, null, null);
+		}
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 		try(Reader reader = Files.newBufferedReader(path)){
 			return mapper.readValue(reader, Config.class);
