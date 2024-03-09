@@ -48,7 +48,7 @@ public record HtmlBasedBlocker(
 	@Override
 	public boolean processRequest(FullHttpRequest fullHttpRequest, FullHttpResponse response, HttpResponseContentAccessor responseContentAccessor, Channel channel) {
 		String contentType = response.headers().get("Content-Type");
-		if(contentType.startsWith("text/html")){
+		if(contentType != null && contentType.startsWith("text/html")){
 			String html = responseContentAccessor.getAsString();
 			Document doc = Jsoup.parse(html);
 			for(Element element : doc.select(selector)){
