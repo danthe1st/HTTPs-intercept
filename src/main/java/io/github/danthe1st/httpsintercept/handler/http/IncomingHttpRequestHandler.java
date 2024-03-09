@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.matcher.HostMatcher;
 import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
 import io.netty.bootstrap.Bootstrap;
@@ -30,15 +30,15 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 	
 	private final SniHandler sniHandler;
 	private final Bootstrap clientBootstrap;
-	private final IterativeHostMatcher<PreForwardRule> hostMatcher;
-	private final IterativeHostMatcher<PostForwardRule> postForwardMatcher;
+	private final HostMatcher<PreForwardRule> hostMatcher;
+	private final HostMatcher<PostForwardRule> postForwardMatcher;
 	
 	/**
 	 * @param sniHandler Netty handler for Server Name Identification (contains the actual target host name)
 	 * @param clientSslContext {@link SslContext} used for the outgoing request
 	 * @param clientBootstrap template for sending the outgoing request
 	 */
-	public IncomingHttpRequestHandler(SniHandler sniHandler, Bootstrap clientBootstrap, IterativeHostMatcher<PreForwardRule> hostMatcher, IterativeHostMatcher<PostForwardRule> postForwardMatcher) {
+	public IncomingHttpRequestHandler(SniHandler sniHandler, Bootstrap clientBootstrap, HostMatcher<PreForwardRule> hostMatcher, HostMatcher<PostForwardRule> postForwardMatcher) {
 		this.sniHandler = sniHandler;
 		this.clientBootstrap = clientBootstrap;
 		this.hostMatcher = hostMatcher;

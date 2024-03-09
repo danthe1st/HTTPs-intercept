@@ -21,6 +21,9 @@ final class HostPartIterator<T> extends IteratingIterator<T> {
 		if(current.hasNext()){
 			return current;
 		}
+		if(index == -1){
+			return Collections.emptyIterator();
+		}
 		do{
 			String hostPart = hostname.substring(index);
 			if(hostParts.containsKey(hostPart)){
@@ -30,11 +33,18 @@ final class HostPartIterator<T> extends IteratingIterator<T> {
 					return current;
 				}
 			}
-		}while(nextIndex() != 0 && index < hostname.length());
+		}while(nextIndex() != -1);
 		return Collections.emptyIterator();
 	}
 
 	private int nextIndex() {
-		return index = hostname.indexOf('.', index) + 1;
+		index = hostname.indexOf('.', index);
+		if(index != -1){
+			index++;
+		}
+		if(index >= hostname.length()){
+			index=-1;
+		}
+		return index;
 	}
 }

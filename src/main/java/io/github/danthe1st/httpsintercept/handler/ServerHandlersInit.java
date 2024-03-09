@@ -14,7 +14,7 @@ import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
 import io.github.danthe1st.httpsintercept.handler.http.IncomingHttpRequestHandler;
 import io.github.danthe1st.httpsintercept.handler.sni.CustomSniHandler;
 import io.github.danthe1st.httpsintercept.handler.sni.SNIHandlerMapping;
-import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.matcher.HostMatcher;
 import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
 import io.github.danthe1st.httpsintercept.rules.ProcessingRule;
@@ -34,9 +34,9 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 	private final Bootstrap clientBootstrapTemplate;
 	private final SNIHandlerMapping sniMapping;
 	
-	private final IterativeHostMatcher<Object> ignoredHostMatcher;
-	private final IterativeHostMatcher<PreForwardRule> preForwardMatcher;
-	private final IterativeHostMatcher<PostForwardRule> postForwardMatcher;
+	private final HostMatcher<Object> ignoredHostMatcher;
+	private final HostMatcher<PreForwardRule> preForwardMatcher;
+	private final HostMatcher<PostForwardRule> postForwardMatcher;
 	
 	public ServerHandlersInit(Bootstrap clientBootstrap, Config config) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 		this.clientBootstrapTemplate = clientBootstrap;
@@ -44,10 +44,10 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		
 		preForwardMatcher = createMatcherFromRules(config.preForwardRules());
 		postForwardMatcher = createMatcherFromRules(config.postForwardRules());
-		ignoredHostMatcher = new IterativeHostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())), false);
+		ignoredHostMatcher = new HostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())), false);
 	}
 
-	private <T extends ProcessingRule> IterativeHostMatcher<T> createMatcherFromRules(List<T> ruleList) {
+	private <T extends ProcessingRule> HostMatcher<T> createMatcherFromRules(List<T> ruleList) {
 		List<Map.Entry<HostMatcherConfig, T>> rules = new ArrayList<>();
 		for(T rule : ruleList){
 			HostMatcherConfig hostMatcher = rule.hostMatcher();
@@ -56,7 +56,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 			}
 			rules.add(Map.entry(hostMatcher, rule));
 		}
-		return new IterativeHostMatcher<>(rules, true);
+		return new HostMatcher<>(rules, true);
 	}
 	
 	@Override

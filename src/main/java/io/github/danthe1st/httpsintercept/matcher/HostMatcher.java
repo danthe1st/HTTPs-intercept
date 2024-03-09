@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 
 import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
 
-public final class IterativeHostMatcher<T> {
+public final class HostMatcher<T> {
 	private final Map<String, List<T>> exactHosts;
 	private final Map<String, List<T>> hostParts;
 	private final Map<Pattern, List<T>> hostRegexes;
 	private final List<T> wildcards;
 	
-	public IterativeHostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs, boolean allowWildcard) {
+	public HostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs, boolean allowWildcard) {
 		Map<String, List<T>> hosts = new HashMap<>();
 		Map<String, List<T>> parts = new HashMap<>();
 		Map<Pattern, List<T>> regexes = new HashMap<>();

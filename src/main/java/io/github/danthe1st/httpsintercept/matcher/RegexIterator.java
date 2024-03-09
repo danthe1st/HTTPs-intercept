@@ -25,9 +25,10 @@ final class RegexIterator<T> extends IteratingIterator<T> {
 			}
 			Entry<Pattern, List<T>> entry = regexes.next();
 			if(!entry.getKey().matcher(hostname).matches()){
-				return Collections.emptyIterator();
+				current = Collections.emptyIterator();
+			}else{
+				current = entry.getValue().iterator();
 			}
-			current = entry.getValue().iterator();
 		}
 		return current;
 	}

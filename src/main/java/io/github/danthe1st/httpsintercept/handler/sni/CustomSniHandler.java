@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.github.danthe1st.httpsintercept.handler.raw.RawForwardIncomingRequestHandler;
-import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.matcher.HostMatcher;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,9 +22,9 @@ public class CustomSniHandler extends SniHandler {
 	
 	private final Bootstrap clientBootstrapTemplate;
 	
-	private final IterativeHostMatcher<Object> ignoredHosts;
+	private final HostMatcher<Object> ignoredHosts;
 	
-	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate, IterativeHostMatcher<Object> ignoredHostMatcher) throws IOException {
+	public CustomSniHandler(Mapping<? super String, ? extends SslContext> mapping, Bootstrap clientBootstrapTemplate, HostMatcher<Object> ignoredHostMatcher) throws IOException {
 		super(mapping);
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
 		ignoredHosts = ignoredHostMatcher;

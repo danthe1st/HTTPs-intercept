@@ -3,7 +3,7 @@ package io.github.danthe1st.httpsintercept.handler.http;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import io.github.danthe1st.httpsintercept.matcher.IterativeHostMatcher;
+import io.github.danthe1st.httpsintercept.matcher.HostMatcher;
 import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -28,9 +28,9 @@ final class OutgoingHttpRequestHandler extends ChannelInitializer<SocketChannel>
 	private final String hostname;
 	private final FullHttpRequest fullHttpRequest;
 	
-	private final IterativeHostMatcher<PostForwardRule> postForwardMatcher;
+	private final HostMatcher<PostForwardRule> postForwardMatcher;
 	
-	OutgoingHttpRequestHandler(ChannelHandlerContext originalClientContext, FullHttpRequest fullHttpRequest, String hostname, IterativeHostMatcher<PostForwardRule> postForwardMatcher) {
+	OutgoingHttpRequestHandler(ChannelHandlerContext originalClientContext, FullHttpRequest fullHttpRequest, String hostname, HostMatcher<PostForwardRule> postForwardMatcher) {
 		this.originalClientContext = originalClientContext;
 		this.hostname = hostname;
 		this.fullHttpRequest = fullHttpRequest;
