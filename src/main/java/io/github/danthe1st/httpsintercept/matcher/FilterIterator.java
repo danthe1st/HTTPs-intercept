@@ -4,16 +4,21 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
-final class FilterIterator<T> implements Iterator<T> {
-	private final Iterator<T> iterator;
-	private final Predicate<T> filter;
-	private T current;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+final class FilterIterator<@NonNull T> implements Iterator<T> {
+	private final Iterator<@NonNull T> iterator;
+	private final Predicate<@NonNull T> filter;
+	private @Nullable T current;
 	
-	public FilterIterator(Iterator<T> iterator, Predicate<T> filter) {
+	public FilterIterator(Iterator<@NonNull T> iterator, Predicate<@NonNull T> filter) {
 		this.iterator = iterator;
 		this.filter = filter;
 	}
 	@Override
+	@EnsuresNonNullIf(expression = "current", result = true)
 	public boolean hasNext() {
 		if(current != null){
 			return true;

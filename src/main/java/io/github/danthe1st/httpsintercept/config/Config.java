@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.github.danthe1st.httpsintercept.rules.PostForwardRule;
 import io.github.danthe1st.httpsintercept.rules.PreForwardRule;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public record Config(
 		HostMatcherConfig ignoredHosts,
@@ -18,7 +21,7 @@ public record Config(
 		List<PostForwardRule> postForwardRules
 ) {
 	
-	public Config(HostMatcherConfig ignoredHosts, List<PreForwardRule> preForwardRules, List<PostForwardRule> postForwardRules) {
+	public Config(@Nullable HostMatcherConfig ignoredHosts, @Nullable List<PreForwardRule> preForwardRules, @Nullable List<PostForwardRule> postForwardRules) {
 		if(ignoredHosts == null){
 			ignoredHosts = new HostMatcherConfig(null, null, null);
 		}
@@ -27,7 +30,7 @@ public record Config(
 		this.postForwardRules = emptyIfNull(postForwardRules);
 	}
 	
-	private <T> List<T> emptyIfNull(List<T> preForwardRules) {
+	private <@NonNull T> List<T> emptyIfNull(@UnderInitialization Config this, @Nullable List<T> preForwardRules) {
 		if(preForwardRules == null){
 			return Collections.emptyList();
 		}

@@ -4,6 +4,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public final class RawForwardIncomingRequestHandler extends ChannelInboundHandle
 	
 	private final String hostname;
 	private final Bootstrap clientBootstrapTemplate;
-	private Channel outChannel = null;
+	private @Nullable Channel outChannel = null;
 	
 	public RawForwardIncomingRequestHandler(String hostname, Bootstrap clientBootstrapTemplate) {
 		this.hostname = hostname;

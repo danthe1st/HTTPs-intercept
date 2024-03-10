@@ -10,6 +10,7 @@
 		<slf4j-version>2.0.12</slf4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<logback.version>1.5.1</logback.version>
+		<checkerframework.version>3.42.0</checkerframework.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -48,6 +49,12 @@
 			<version>1.17.2</version>
 		</dependency>
 		<dependency>
+	      <groupId>org.checkerframework</groupId>
+	      <artifactId>checker-qual</artifactId>
+	      <version>${checkerframework.version}</version>
+	      <scope>provided</scope>
+	    </dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.10.2</version>
@@ -63,6 +70,34 @@
 				<version>3.12.1</version>
 				<configuration>
 					<release>21</release>
+					<fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+		            <annotationProcessorPaths>
+			            <path>
+				            <groupId>org.checkerframework</groupId>
+				            <artifactId>checker</artifactId>
+				            <version>${checkerframework.version}</version>
+			            </path>
+		            </annotationProcessorPaths>
+		            <annotationProcessors>
+		              <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+		            </annotationProcessors>
+					<compilerArgs>
+		                <arg>-J-XX:+AutoCreateSharedArchive</arg>
+						<arg>-J-XX:SharedArchiveFile=.classes.jsa</arg>
+						<arg>-Xmaxerrs</arg>
+		                <arg>10000</arg>
+		                <arg>-Xmaxwarns</arg>
+		                <arg>10000</arg>
+	                	<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+		                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+	            	</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -116,8 +151,7 @@
 						<version>${native-plugin-version}</version>
 						<extensions>true</extensions>
 						<configuration>
-							<buildArgs combine.self="merge"
-								combine.children="append">
+							<buildArgs combine.self="merge" combine.children="append">
 								<buildArg>-O3</buildArg>
 								<buildArg>--gc=G1</buildArg>
 								<buildArg>--strict-image-heap</buildArg>

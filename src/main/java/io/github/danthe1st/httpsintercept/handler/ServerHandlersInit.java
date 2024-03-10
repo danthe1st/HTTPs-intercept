@@ -24,6 +24,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SniHandler;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		ignoredHostMatcher = new HostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())), false);
 	}
 
-	private <T extends ProcessingRule> HostMatcher<T> createMatcherFromRules(List<T> ruleList) {
+	private <T extends ProcessingRule> HostMatcher<T> createMatcherFromRules(@UnderInitialization ServerHandlersInit this, List<T> ruleList) {
 		List<Map.Entry<HostMatcherConfig, T>> rules = new ArrayList<>();
 		for(T rule : ruleList){
 			HostMatcherConfig hostMatcher = rule.hostMatcher();

@@ -14,19 +14,22 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class HostMatcher<T> {
-	private final Map<String, List<T>> exactHosts;
-	private final Map<String, List<T>> hostParts;
-	private final Map<Pattern, List<T>> hostRegexes;
-	private final List<T> wildcards;
+public final class HostMatcher<@NonNull T> {
+	private final Map<String, List<@NonNull T>> exactHosts;
+	private final Map<String, List<@NonNull T>> hostParts;
+	private final Map<Pattern, List<@NonNull T>> hostRegexes;
+	private final List<@NonNull T> wildcards;
 	
-	public HostMatcher(List<Map.Entry<HostMatcherConfig, T>> configs, boolean allowWildcard) {
-		Map<String, List<T>> hosts = new HashMap<>();
-		Map<String, List<T>> parts = new HashMap<>();
-		Map<Pattern, List<T>> regexes = new HashMap<>();
-		List<T> wildcardElements = new ArrayList<>();
-		for(Map.Entry<HostMatcherConfig, T> entry : configs){
+	public HostMatcher(List<Map.Entry<HostMatcherConfig, @NonNull T>> configs, boolean allowWildcard) {
+		Map<String, List<@NonNull T>> hosts = new HashMap<>();
+		Map<String, List<@NonNull T>> parts = new HashMap<>();
+		Map<Pattern, List<@NonNull T>> regexes = new HashMap<>();
+		List<@NonNull T> wildcardElements = new ArrayList<>();
+		for(Map.Entry<HostMatcherConfig, @NonNull T> entry : configs){
 			HostMatcherConfig config = entry.getKey();
 			T value = entry.getValue();
 			if(allowWildcard && config.exact().isEmpty() && config.partial().isEmpty() && config.regex().isEmpty()){
@@ -43,21 +46,21 @@ public final class HostMatcher<T> {
 		this.wildcards = List.copyOf(wildcardElements);
 	}
 	
-	private <K> void addToMap(Map<K, List<T>> multimap, T value, Set<String> configValue, Function<String, K> keyTransformer) {
+	private <K> void addToMap(@UnderInitialization HostMatcher<T> this, Map<K, List<@NonNull T>> multimap, @NonNull T value, Set<String> configValue, Function<String, K> keyTransformer) {
 		for(String host : configValue){
 			multimap
-				.computeIfAbsent(keyTransformer.apply(host), h -> new ArrayList<>())
+				.computeIfAbsent(keyTransformer.apply(host), h -> new ArrayList<@NonNull T>())
 				.add(value);
 		}
 	}
 	
-	private <K> Map<K, List<T>> toImmutable(Map<K, List<T>> multimap) {
+	private <@NonNull K> Map<@NonNull K, List<@NonNull T>> toImmutable(@UnderInitialization HostMatcher<T> this, Map<@NonNull K, List<@NonNull T>> multimap) {
 		multimap.replaceAll((k, list) -> List.copyOf(list));
 		return Map.copyOf(multimap);
 	}
 	
-	public Iterator<T> allMatches(String hostname) {
-		Queue<Iterator<T>> iterators = new ArrayDeque<>();
+	public Iterator<@NonNull T> allMatches(String hostname) {
+		Queue<Iterator<@NonNull T>> iterators = new ArrayDeque<>();
 		
 		if(exactHosts.containsKey(hostname)){
 			iterators.add(exactHosts.get(hostname).iterator());
@@ -68,11 +71,11 @@ public final class HostMatcher<T> {
 		iterators.add(new RegexIterator<>(hostRegexes, hostname));
 		iterators.add(wildcards.iterator());
 		
-		Iterator<T> it = new IteratingIterator<>() {
-			private Iterator<T> current = iterators.poll();
+		Iterator<@NonNull T> it = new IteratingIterator<@NonNull T>() {
+			private @Nullable Iterator<@NonNull T> current = iterators.poll();
 			
 			@Override
-			protected Iterator<T> findNextIterator() {
+			protected Iterator<@NonNull T> findNextIterator() {
 				while(current != null && !current.hasNext()){
 					current = iterators.poll();
 				}
@@ -86,7 +89,7 @@ public final class HostMatcher<T> {
 		return distinctIterator(it);
 	}
 
-	private Iterator<T> distinctIterator(Iterator<T> it) {
+	private Iterator<@NonNull T> distinctIterator(Iterator<@NonNull T> it) {
 		Set<T> matchers = Collections.newSetFromMap(new IdentityHashMap<>());
 		return new FilterIterator<>(it, element -> {
 			if(!matchers.contains(element)){

@@ -64,11 +64,19 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 			ks.load(is, passphrase);
 		}
 		
-		rootCert = (X509Certificate) ks.getCertificate("root");
+		if(!(ks.getCertificate("root") instanceof X509Certificate loadedRoot)){
+			throw new IllegalStateException("No root certificate found");
+		}
+		
+		if(!(ks.getKey("root", privateKeyPassword) instanceof PrivateKey rootKey)){
+			throw new IllegalStateException("No root certificate private key found");
+		}
+		
+		rootCert = loadedRoot;
 		
 		rootKeyPair = new KeyPair(
 				rootCert.getPublicKey(),
-				(PrivateKey) ks.getKey("root", privateKeyPassword)
+				rootKey
 		);
 		
 		serverKeyPair = CertificateGenerator.generateKeyPair();
@@ -94,10 +102,6 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 		}
 	}
 
-	private KeyPair extractKeyPair(KeyStore ks, String keyName, char[] passphrase) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
-		return new KeyPair(ks.getCertificate(keyName).getPublicKey(), (PrivateKey)ks.getKey(keyName, passphrase));
-	}
-	
 	@Override
 	public SslContext map(String hostname) {
 		LOG.debug("loadding certificate for hostname {}", hostname);
@@ -114,7 +118,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	private SslContext createSslContext(String hostname) {
 		try{
 			X509Certificate newCert = CertificateGenerator.createCertificate(serverKeyPair, hostname, rootKeyPair, rootCert, false);
-			return SslContextBuilder.forServer(serverKeyPair.getPrivate(), (String)null, newCert, rootCert).build();
+			return SslContextBuilder.forServer(serverKeyPair.getPrivate(), newCert, rootCert).build();
 		}catch(SSLException | CertIOException | OperatorCreationException | CertificateException e){
 			throw new CertificateGenerationException("ailed to initialize the server-side SSLContext", e);
 		}
