@@ -8,7 +8,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(name = "addHeader", value = SetRequestHeaderRule.class) })
+@JsonSubTypes({ @Type(name = "setHeader", value = SetRequestHeaderRule.class) })
 public interface PreForwardRule extends ProcessingRule {
 	boolean processRequest(FullHttpRequest fullHttpRequest, Channel channel);
 }

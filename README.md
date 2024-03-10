@@ -104,3 +104,76 @@ In this example
   - `reroute.sh`: The script configuring rules with `iptables`
   - `https-intercept`: The built binary or a script executing the program
   - `interceptor.jks` and `.secrets` as created by `certs.sh`
+
+# Configuration
+This program can be configured by creating a file called `intercept.yaml` in the working directory.
+```yaml
+ignoredHosts: []
+preForwardRules: []
+postForwardRules: []
+```
+
+## ignored hosts
+Using the configuration entry `ignoredHosts`, one can configure hostnames that should not be intercepted.
+Requests to these hosts are forwarded as-is without decrypting the request.
+It is possible to specify hostnames that must match exactly, parts of the hierarchy or regexes:
+```yaml
+ignoredHosts:
+  exact:
+  # This matches example.com but not somesubdomain.example.com
+  - example.com
+  partial:
+  # This matches example.com and all subdomains
+  - example.com
+  # This matches all hosts ending with `.local`
+  - local
+  regex:
+  # This matches all domains matching the given regex, e.g. example.com or example.org but not host.example.com
+  - example\\.[a-zA-Z]*
+```
+
+## pre-forward rules
+With the entry `preForwardRules`, it is possible to configure rules that happen before forwarding the request.
+Pre-forward rules can access the request but not the response.
+The rules are identified using a `type` parameter.
+All rules have a `hostMatcher` parameter configuring in the same format as `ignoredHosts` which hosts they should apply to.
+
+Currently, the only implemented rule (`setHeader`) allows setting HTTP request headers.
+```yaml
+preForwardRules:
+# set a header for all requests
+# in this case, we are setting the "Referer" header to "localhost"
+- type: setHeader
+  headers:
+    Referer: localhost
+# set a header for requests to example.com
+- type: addHeader
+  hostMatcher:
+    exact:
+    - example.com
+  headers:
+    X-My-Custom-Header: some-header-value
+```
+
+## post-forward rules
+Similarlarly to `preForwardRules`, `postForwardRules` can be used to configure rules that are processed after forwarding the request.
+These rules can access and modify the response.
+As with Pre-forward rules, Post-forward rules are identified with a `type` parameter and can be filtered using a `ignoredHosts` specification.
+
+Currently, the only implemented rule (`htmlBasedBlock`) blocks responses based on the HTML response.
+This rule checks whether an element matching a CSS selector exists matching a regex.
+```yaml
+# This rule attempts to block rick rolls based on the <title> element
+- type: htmlBasedBlock
+  # This rule only applies to YouTube and its subdomains
+  hostMatcher:
+    partial:
+    - youtube.com
+  # if a <title> containing the text "Never gonna give you up" is found, the response is not sent to the client
+  selector: title
+  matcher: .*Never gonna give you up.*
+  # it is possible to set a custom HTTP status for the blocked response
+  status: 500
+  # a path to an HTML file containing the new response can be specified as follows
+  responsePath: /path/to/block/information.html
+```
