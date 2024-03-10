@@ -47,7 +47,7 @@ public class ServerHandlersInit extends ChannelInitializer<SocketChannel> {
 		postForwardMatcher = createMatcherFromRules(config.postForwardRules());
 		ignoredHostMatcher = new HostMatcher<>(List.of(Map.entry(config.ignoredHosts(), new Object())), false);
 	}
-
+	
 	private <T extends ProcessingRule> HostMatcher<T> createMatcherFromRules(@UnderInitialization ServerHandlersInit this, List<T> ruleList) {
 		List<Map.Entry<HostMatcherConfig, T>> rules = new ArrayList<>();
 		for(T rule : ruleList){

@@ -18,8 +18,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public record Config(
 		HostMatcherConfig ignoredHosts,
 		List<PreForwardRule> preForwardRules,
-		List<PostForwardRule> postForwardRules
-) {
+		List<PostForwardRule> postForwardRules) {
 	
 	public Config(@Nullable HostMatcherConfig ignoredHosts, @Nullable List<PreForwardRule> preForwardRules, @Nullable List<PostForwardRule> postForwardRules) {
 		if(ignoredHosts == null){
@@ -38,7 +37,7 @@ public record Config(
 	}
 	
 	public static Config load(Path path) throws IOException {
-		if(!Files.exists(path)) {
+		if(!Files.exists(path)){
 			return new Config(null, null, null);
 		}
 		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());

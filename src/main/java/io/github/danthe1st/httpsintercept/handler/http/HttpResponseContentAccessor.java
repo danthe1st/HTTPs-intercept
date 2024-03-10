@@ -25,7 +25,7 @@ public class HttpResponseContentAccessor {
 		ensureBytesPresent();
 		return new String(bytes, StandardCharsets.UTF_8);
 	}
-
+	
 	@EnsuresNonNull("bytes")
 	private void ensureBytesPresent() {
 		if(bytes == null){

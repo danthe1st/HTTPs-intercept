@@ -10,7 +10,7 @@ abstract class IteratingIterator<T> implements Iterator<T> {
 	public boolean hasNext() {
 		return findNextIterator().hasNext();
 	}
-
+	
 	@Override
 	public T next() {
 		return findNextIterator().next();

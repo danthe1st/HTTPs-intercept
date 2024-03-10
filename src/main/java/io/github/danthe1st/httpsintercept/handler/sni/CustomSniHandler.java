@@ -29,7 +29,7 @@ public class CustomSniHandler extends SniHandler {
 		this.clientBootstrapTemplate = clientBootstrapTemplate;
 		ignoredHosts = ignoredHostMatcher;
 	}
-
+	
 	@Override
 	protected void replaceHandler(ChannelHandlerContext channelHandlerContext, String hostname, SslContext sslContext) throws Exception {
 		ChannelPipeline pipeline = channelHandlerContext.pipeline();
@@ -39,7 +39,7 @@ public class CustomSniHandler extends SniHandler {
 			
 			boolean foundThis = false;
 			
-			for(Iterator<Map.Entry<String, ChannelHandler>> it = pipeline.iterator();it.hasNext();) {
+			for(Iterator<Map.Entry<String, ChannelHandler>> it = pipeline.iterator(); it.hasNext();){
 				ChannelHandler handler = it.next().getValue();
 				if(foundThis){
 					it.remove();

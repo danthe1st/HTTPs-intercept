@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class HostMatcher<@NonNull T> {
 	private final Map<String, List<@NonNull T>> exactHosts;
@@ -48,9 +47,11 @@ public final class HostMatcher<@NonNull T> {
 	
 	private <K> void addToMap(@UnderInitialization HostMatcher<T> this, Map<K, List<@NonNull T>> multimap, @NonNull T value, Set<String> configValue, Function<String, K> keyTransformer) {
 		for(String host : configValue){
-			multimap
-				.computeIfAbsent(keyTransformer.apply(host), h -> new ArrayList<@NonNull T>())
-				.add(value);
+			multimap.merge(
+					keyTransformer.apply(host),
+					new ArrayList<>(),
+					(existing, emptyList) -> existing
+			).add(value);
 		}
 	}
 	
@@ -71,24 +72,9 @@ public final class HostMatcher<@NonNull T> {
 		iterators.add(new RegexIterator<>(hostRegexes, hostname));
 		iterators.add(wildcards.iterator());
 		
-		Iterator<@NonNull T> it = new IteratingIterator<@NonNull T>() {
-			private @Nullable Iterator<@NonNull T> current = iterators.poll();
-			
-			@Override
-			protected Iterator<@NonNull T> findNextIterator() {
-				while(current != null && !current.hasNext()){
-					current = iterators.poll();
-				}
-				if(current == null){
-					return Collections.emptyIterator();
-				}
-				return current;
-			}
-		};
-		
-		return distinctIterator(it);
+		return distinctIterator(new ConcatenatingIterator<>(iterators));
 	}
-
+	
 	private Iterator<@NonNull T> distinctIterator(Iterator<@NonNull T> it) {
 		Set<T> matchers = Collections.newSetFromMap(new IdentityHashMap<>());
 		return new FilterIterator<>(it, element -> {

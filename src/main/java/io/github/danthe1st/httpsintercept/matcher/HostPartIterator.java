@@ -36,14 +36,14 @@ final class HostPartIterator<T> extends IteratingIterator<T> {
 		}while(nextIndex() != -1);
 		return Collections.emptyIterator();
 	}
-
+	
 	private int nextIndex() {
 		index = hostname.indexOf('.', index);
 		if(index != -1){
 			index++;
 		}
 		if(index >= hostname.length()){
-			index=-1;
+			index = -1;
 		}
 		return index;
 	}

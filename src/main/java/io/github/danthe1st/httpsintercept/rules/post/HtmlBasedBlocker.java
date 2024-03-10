@@ -33,7 +33,7 @@ public record HtmlBasedBlocker(
 		if(status <= 0){
 			status = 500;
 		}
-		if(responseContentType==null) {
+		if(responseContentType == null){
 			responseContentType = "text/html";
 		}
 		

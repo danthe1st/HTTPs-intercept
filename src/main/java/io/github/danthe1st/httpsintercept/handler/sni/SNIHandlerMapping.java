@@ -39,7 +39,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 	private final Map<String, SslContextCacheEntry> certificateCache = new ConcurrentHashMap<>();
 	private final KeyPair rootKeyPair;
 	private final X509Certificate rootCert;
-
+	
 	private final KeyPair serverKeyPair;
 	
 	private SNIHandlerMapping() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
@@ -87,7 +87,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 		Thread.startVirtualThread(mapping::runCleanupDaemon);
 		return mapping;
 	}
-
+	
 	private void runCleanupDaemon() {
 		try{
 			while(true){// NOSONAR ended by potential InterruptedException (or more likely the virtual thread ending)
@@ -101,7 +101,7 @@ public class SNIHandlerMapping implements Mapping<String, SslContext> {
 			Thread.currentThread().interrupt();
 		}
 	}
-
+	
 	@Override
 	public SslContext map(String hostname) {
 		LOG.debug("loadding certificate for hostname {}", hostname);

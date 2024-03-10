@@ -40,7 +40,7 @@ final class ResponseHandler extends ChannelInboundHandlerAdapter {
 		originalClientContext.channel().close();
 		ctx.channel().close();
 	}
-
+	
 	private void processRules(FullHttpResponse res) {
 		HttpResponseContentAccessor contentAccessor = new HttpResponseContentAccessor(res);
 		for(PostForwardRule rule : postForwardRules){

@@ -85,16 +85,15 @@ public final class IncomingHttpRequestHandler extends SimpleChannelInboundHandle
 		}
 	}
 	
-	
 	// in case Netty caught an exception (e.g. the server is unreachable),
 	// the client receives a 502 Bad Gateway response including the stack trace
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-			LOG
-				.atError()
-				.addArgument(sniHandler::hostname)
-				.log("An exception occured trying to process a request to host '{}'", cause);
-			ctx.channel().close();
+		LOG
+			.atError()
+			.addArgument(sniHandler::hostname)
+			.log("An exception occured trying to process a request to host '{}'", cause);
+		ctx.channel().close();
 	}
 	
 	private void writeException(Throwable cause, Channel channel) throws InterruptedException, IOException {

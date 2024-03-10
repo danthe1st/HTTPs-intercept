@@ -17,6 +17,7 @@ final class FilterIterator<@NonNull T> implements Iterator<T> {
 		this.iterator = iterator;
 		this.filter = filter;
 	}
+	
 	@Override
 	@EnsuresNonNullIf(expression = "current", result = true)
 	public boolean hasNext() {
