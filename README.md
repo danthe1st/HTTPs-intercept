@@ -164,6 +164,7 @@ Currently, the only implemented rule (`htmlBasedBlock`) blocks responses based o
 This rule checks whether an element matching a CSS selector exists matching a regex.
 ```yaml
 # This rule attempts to block rick rolls based on the <title> element
+# it is not very reliable as rickrolls may have different <title>s and YouTube may load it in different ways
 - type: htmlBasedBlock
   # This rule only applies to YouTube and its subdomains
   hostMatcher:
