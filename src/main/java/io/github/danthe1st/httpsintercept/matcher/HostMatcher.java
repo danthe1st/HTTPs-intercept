@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public final class HostMatcher<@NonNull T> {
+public final class HostMatcher<T> {
 	private final Map<String, List<@NonNull T>> exactHosts;
 	private final Map<String, List<@NonNull T>> hostParts;
 	private final Map<Pattern, List<@NonNull T>> hostRegexes;

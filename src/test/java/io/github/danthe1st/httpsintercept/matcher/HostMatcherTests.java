@@ -123,7 +123,47 @@ class HostMatcherTests {
 		expectNoMatches(matcher, "example.com");
 	}
 	
-	// TODO wildcard
+	@Test
+	void testWildcard() {
+		HostMatcher<Object> matcher = new HostMatcher<>(
+				List.of(
+						Map.entry(
+								new HostMatcherConfig(null, null, null), 1
+						)
+				), true
+		);
+		expectSingleMatch(matcher, "localhost");
+		expectSingleMatch(matcher, "");
+	}
+	
+	void testWildcardAndNoWildcard() {
+		HostMatcher<Object> matcher = new HostMatcher<>(
+				List.of(
+						Map.entry(
+								new HostMatcherConfig(Set.of("example.com"), null, null), 1
+						),
+						Map.entry(
+								new HostMatcherConfig(null, null, null), 2
+						)
+				), true
+		);
+		expectMatches(matcher, "example.com", 1, 2);
+		expectMatches(matcher, "localhost", 2);
+	}
+	
+	@Test
+	void testNoWildcardWithAllowedWildcard() {
+		HostMatcher<Object> matcher = new HostMatcher<>(
+				List.of(
+						Map.entry(
+								new HostMatcherConfig(Set.of("example.com"), null, null), 1
+						)
+				), true
+		);
+		expectSingleMatch(matcher, "example.com");
+		expectNoMatches(matcher, "localhost");
+		expectNoMatches(matcher, "");
+	}
 	
 	private HostMatcher<Object> createMatcher(Set<String> exactHosts, Set<String> hostParts, Set<String> hostRegexes) {
 		return new HostMatcher<>(List.of(Map.entry(new HostMatcherConfig(exactHosts, hostParts, hostRegexes), 1)), false);
