@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import io.github.danthe1st.httpsintercept.config.HostMatcherConfig;
-import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public final class HostMatcher<@NonNull T> {
@@ -45,7 +44,7 @@ public final class HostMatcher<@NonNull T> {
 		this.wildcards = List.copyOf(wildcardElements);
 	}
 	
-	private <K> void addToMap(@UnderInitialization HostMatcher<T> this, Map<K, List<@NonNull T>> multimap, @NonNull T value, Set<String> configValue, Function<String, K> keyTransformer) {
+	private static <T, K> void addToMap(Map<K, List<@NonNull T>> multimap, @NonNull T value, Set<String> configValue, Function<String, K> keyTransformer) {
 		for(String host : configValue){
 			multimap.merge(
 					keyTransformer.apply(host),
@@ -55,7 +54,7 @@ public final class HostMatcher<@NonNull T> {
 		}
 	}
 	
-	private <@NonNull K> Map<@NonNull K, List<@NonNull T>> toImmutable(@UnderInitialization HostMatcher<T> this, Map<@NonNull K, List<@NonNull T>> multimap) {
+	private static <T, K> Map<@NonNull K, List<@NonNull T>> toImmutable(Map<@NonNull K, List<@NonNull T>> multimap) {
 		multimap.replaceAll((k, list) -> List.copyOf(list));
 		return Map.copyOf(multimap);
 	}
