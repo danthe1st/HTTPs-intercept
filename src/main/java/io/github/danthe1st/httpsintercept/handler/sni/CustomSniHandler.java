@@ -39,7 +39,6 @@ public class CustomSniHandler extends SniHandler {
 			channelHandlerContext.close();
 		}else if(ignoredHosts.allMatches(hostname).hasNext()){
 			LOG.info("skipping hostname {}", hostname);
-			
 			replaceWithRawForward(hostname, pipeline);
 		}else{
 			super.replaceHandler(channelHandlerContext, hostname, sslContext);
