@@ -9,7 +9,7 @@
 		<native-plugin-version>0.10.1</native-plugin-version>
 		<slf4j-version>2.0.12</slf4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<logback.version>1.5.1</logback.version>
+		<logback.version>1.5.13</logback.version>
 		<checkerframework.version>3.42.0</checkerframework.version>
 	</properties>
 	<dependencies>
