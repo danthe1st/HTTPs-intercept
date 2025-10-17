@@ -46,11 +46,15 @@ public final class HostMatcher<T> {
 	
 	private static <T, K> void addToMap(Map<K, List<@NonNull T>> multimap, @NonNull T value, Set<String> configValue, Function<String, K> keyTransformer) {
 		for(String host : configValue){
-			multimap.merge(
+			List<@NonNull T> list = multimap.merge(
 					keyTransformer.apply(host),
 					new ArrayList<>(),
 					(existing, emptyList) -> existing
-			).add(value);
+			);
+			if(list == null){
+				throw new NullPointerException();
+			}
+			list.add(value);
 		}
 	}
 	
@@ -62,8 +66,9 @@ public final class HostMatcher<T> {
 	public Iterator<@NonNull T> allMatches(String hostname) {
 		Queue<Iterator<@NonNull T>> iterators = new ArrayDeque<>();
 		
-		if(exactHosts.containsKey(hostname)){
-			iterators.add(exactHosts.get(hostname).iterator());
+		List<@NonNull T> exactHostElements = exactHosts.get(hostname);
+		if(exactHostElements != null){
+			iterators.add(exactHostElements.iterator());
 		}
 		if(!hostParts.isEmpty()){
 			iterators.add(new HostPartIterator<>(hostname, hostParts));

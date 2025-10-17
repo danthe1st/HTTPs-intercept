@@ -26,8 +26,9 @@ final class HostPartIterator<T> extends IteratingIterator<T> {
 		}
 		do{
 			String hostPart = hostname.substring(index);
-			if(hostParts.containsKey(hostPart)){
-				current = hostParts.get(hostPart).iterator();
+			List<T> currentHostParts = hostParts.get(hostPart);
+			if(currentHostParts != null){
+				current = currentHostParts.iterator();
 				if(current.hasNext()){
 					nextIndex();
 					return current;

@@ -9,8 +9,8 @@
 		<native-plugin-version>0.10.1</native-plugin-version>
 		<slf4j-version>2.0.12</slf4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<logback.version>1.5.14</logback.version>
-		<checkerframework.version>3.42.0</checkerframework.version>
+		<logback.version>1.5.19</logback.version>
+		<checkerframework.version>3.51.1</checkerframework.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -97,6 +97,7 @@
 		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
 		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
 		                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+		                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
 	            	</compilerArgs>
 				</configuration>
 			</plugin>
