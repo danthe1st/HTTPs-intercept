@@ -6,17 +6,17 @@
 	<artifactId>https-intercept</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
-		<native-plugin-version>0.10.1</native-plugin-version>
+		<native-plugin-version>1.0.0</native-plugin-version>
 		<slf4j-version>2.0.12</slf4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<logback.version>1.5.25</logback.version>
-		<checkerframework.version>3.51.1</checkerframework.version>
+		<logback.version>1.5.32</logback.version>
+		<checkerframework.version>4.0.0</checkerframework.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>4.2.7.Final</version>
+			<version>4.2.12.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.82</version>
+			<version>1.84</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -41,12 +41,12 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.20.0</version>
+			<version>2.21.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.21.2</version>
+			<version>1.22.1</version>
 		</dependency>
 		<dependency>
 	      <groupId>org.checkerframework</groupId>
@@ -69,7 +69,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.12.1</version>
 				<configuration>
-					<release>21</release>
+					<release>25</release>
 					<fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
 		            <annotationProcessorPaths>
 			            <path>
@@ -155,7 +155,6 @@
 							<buildArgs combine.self="merge" combine.children="append">
 								<buildArg>-O3</buildArg>
 								<buildArg>--gc=G1</buildArg>
-								<buildArg>--strict-image-heap</buildArg>
 								<buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
 								<buildArg>-H:ResourceConfigurationFiles=graal/resource-config.json</buildArg>
 								<buildArg>-H:ReflectionConfigurationFiles=graal/reflect-config.json</buildArg>
